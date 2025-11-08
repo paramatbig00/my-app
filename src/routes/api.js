@@ -36,7 +36,7 @@ router.get("/init", async (req, res) => {
       {
         headers: { Authorization: `Bearer ${token}` },
         params: {
-          citizenId: "1101700206181", // ตัวอย่างเลขบัตร สามารถเปลี่ยนให้ dynamic ได้
+          citizenId: "1101700206181", 
         },
       }
     );

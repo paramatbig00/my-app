@@ -1,0 +1,10 @@
+CREATE TABLE IF NOT EXISTS "User" (
+    id SERIAL PRIMARY KEY,
+    userId VARCHAR(50) UNIQUE NOT NULL,
+    citizenId VARCHAR(13) UNIQUE NOT NULL,
+    firstname VARCHAR(100) NOT NULL,
+    lastname VARCHAR(100) NOT NULL,
+    mobile VARCHAR(10),
+    email VARCHAR(100),
+    created_at TIMESTAMP DEFAULT NOW()
+);

@@ -2,33 +2,44 @@ version: "3.8"
 
 services:
   db:
-    image: postgres:16
+    image: postgres:18
     container_name: my-postgres
+    restart: always
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: 123456
       POSTGRES_DB: my_app_db
+      PGDATA: /var/lib/postgresql/data/pgdata
     ports:
       - "5432:5432"
     volumes:
       - ./pgdata:/var/lib/postgresql/data
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql  
+    networks:
+      - my_network
 
   app:
     build: .
     container_name: my-node-app
+    restart: always
     ports:
       - "3000:3000"
     environment:
-      - PORT=3000
-      - DB_HOST=db
-      - DB_USER=postgres
-      - DB_PASSWORD=123456
-      - DB_NAME=my_app_db
-      - DB_PORT=5432
-      - CONSUMER_SECRET=${CONSUMER_SECRET}
-      - AGENT_ID=${AGENT_ID}
+      PORT: 3000
+      DB_HOST: db
+      DB_USER: postgres
+      DB_PASSWORD: 123456
+      DB_NAME: my_app_db
+      DB_PORT: 5432
     depends_on:
       - db
     volumes:
       - .:/app
+    working_dir: /app
     command: ["npm", "start"]
+    networks:
+      - my_network
+
+networks:
+  my_network:
+    driver: bridge
