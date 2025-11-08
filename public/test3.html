@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>User Account - eGov Connect</title>
+
+  <!-- โหลด SDK จาก DGA -->
+  <script src="https://czp.dga.or.th/cportal/sdk/iu/v3/sdk.js"></script>
+
+  <!-- ฟอนต์และสไตล์ -->
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+
+  <style>
+    body {
+      font-family: 'Prompt', sans-serif;
+      background-color: #f7f8fa;
+      margin: 0;
+      padding: 0;
+    }
+
+    .loader-container {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      text-align: center;
+      color: #333;
+    }
+
+    .spinner {
+      border: 5px solid #f3f3f3;
+      border-top: 5px solid #1976d2;
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      animation: spin 1s linear infinite;
+      margin-bottom: 20px;
+    }
+
+    @keyframes spin {
+      0% {
+        transform: rotate(0deg);
+      }
+
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+
+    .user-card {
+      display: none;
+      max-width: 500px;
+      margin: 60px auto;
+      padding: 30px;
+      border-radius: 16px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+      background: #fff;
+      animation: fadeIn 0.6s ease;
+    }
+
+    .user-card h2 {
+      text-align: center;
+      margin-bottom: 16px;
+      color: #333;
+    }
+
+    .user-info p {
+      margin: 8px 0;
+      font-size: 16px;
+      color: #444;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .avatar {
+      display: block;
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      margin: 0 auto 20px;
+      background: #cfd8dc;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 48px;
+      color: white;
+    }
+
+    .error {
+      text-align: center;
+      color: red;
+      font-size: 14px;
+      margin-top: 16px;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Loader -->
+  <div id="loader" class="loader-container">
+    <div class="spinner"></div>
+    <p>กำลังเชื่อมต่อและดึงข้อมูลจากระบบ eGov...</p>
+  </div>
+
+  <!-- User Card -->
+  <div id="userCard" class="user-card">
+    <div class="avatar">👤</div>
+    <h2>บัญชีผู้ใช้</h2>
+    <div class="user-info">
+      <p><strong>รหัสประชาชน:</strong> <span id="citizenId"></span></p>
+      <p><strong>ชื่อ:</strong> <span id="firstname"></span></p>
+      <p><strong>นามสกุล:</strong> <span id="lastname"></span></p>
+      <p><strong>เบอร์มือถือ:</strong> <span id="mobile"></span></p>
+      <p><strong>อีเมล:</strong> <span id="email"></span></p>
+    </div>
+    <div class="error" id="errorMsg"></div>
+  </div>
+
+  <script>
+    const loader = document.getElementById("loader");
+    const userCard = document.getElementById("userCard");
+    const errorMsg = document.getElementById("errorMsg");
+
+    async function initData() {
+      try {
+        loader.style.display = "flex";
+        userCard.style.display = "none";
+        errorMsg.textContent = "";
+
+        // เริ่มแสดง CZP SDK Loader (ถ้ามี)
+        if (typeof CZP !== "undefined" && CZP.showLoading) {
+          CZP.showLoading();
+        }
+
+        // ✅ Step 1: ขอ Token จาก backend
+        const res = await fetch("/api/init");
+        const data = await res.json();
+
+        if (!data.success || !data.user?.token) {
+          console.warn("ไม่พบ token จาก eGov API");
+          // ให้ Loader ค้างไว้ ไม่ขึ้น error alert
+          return;
+        }
+
+        const token = data.user.token;
+        console.log("✅ Token:", token);
+
+        // ✅ Step 2: ใช้ CZP SDK ดึงข้อมูล
+        const czp = new CZP.SDK({
+          client_id: "czp_portal",
+          redirect_uri: window.location.origin,
+        });
+
+        const sensitiveData = await czp.getSensitiveData({
+          token,
+          scope: ["pid", "name", "lastname", "email", "mobile"],
+        });
+
+        if (!sensitiveData || !sensitiveData.pid) {
+          console.warn("ไม่พบข้อมูลผู้ใช้จาก Sensitive API");
+          return;
+        }
+
+        console.log("📦 Sensitive Data:", sensitiveData);
+
+        // ✅ Step 3: แสดงผล
+        document.getElementById("citizenId").textContent = sensitiveData.pid || "-";
+        document.getElementById("firstname").textContent = sensitiveData.name || "-";
+        document.getElementById("lastname").textContent = sensitiveData.lastname || "-";
+        document.getElementById("mobile").textContent = sensitiveData.mobile || "-";
+        document.getElementById("email").textContent = sensitiveData.email || "-";
+
+        // ✅ Step 4: แสดงหน้า User Account
+        loader.style.display = "none";
+        userCard.style.display = "block";
+
+        // ✅ Step 5: บันทึกข้อมูลลงฐานข้อมูล
+        await fetch("/api/saveUser", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            citizenId: sensitiveData.pid,
+            firstname: sensitiveData.name,
+            lastname: sensitiveData.lastname,
+            mobile: sensitiveData.mobile,
+            email: sensitiveData.email,
+          }),
+        });
+
+        console.log("💾 บันทึกข้อมูลผู้ใช้เรียบร้อย");
+
+      } catch (err) {
+        console.error("❌ Error:", err);
+        errorMsg.textContent = "เกิดข้อผิดพลาดในการโหลดข้อมูล";
+      } finally {
+        // ปิด Loader SDK ถ้าข้อมูลโหลดแล้ว
+        if (typeof CZP !== "undefined" && CZP.hideLoading) {
+          CZP.hideLoading();
+        }
+      }
+    }
+
+    // ✅ ดึงข้อมูลทันทีเมื่อเปิดหน้า
+    window.addEventListener("load", initData);
+  </script>
+</body>
+
+</html>
