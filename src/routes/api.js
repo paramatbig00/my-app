@@ -4,7 +4,7 @@ const axios = require("axios");
 const { pool } = require("../db");
 require("dotenv").config();
 
-// ✅ ขั้นตอน 1: ขอ Token จาก eGov
+// ✅ ขั้นตอน 1: ขอ Token จาก eGov (ส่งกลับไปให้ frontend)
 router.get("/init", async (req, res) => {
   try {
     console.log("🔹 เริ่มขอ Token จาก eGov...");
@@ -18,66 +18,36 @@ router.get("/init", async (req, res) => {
       });
     }
 
-    // 🔹 Step 1: ขอ Token
+    // 🔹 Step 1: ขอ Token จาก eGov
     const tokenResponse = await axios.get("https://api.egov.go.th/ws/auth/validate", {
       params: { ConsumerSecret: CONSUMER_SECRET, AgentID: AGENT_ID },
     });
 
-    if (!tokenResponse.data?.token) {
+    const token = tokenResponse.data?.token;
+
+    if (!token) {
       throw new Error("ไม่ได้รับ token จาก eGov API");
     }
 
-    const token = tokenResponse.data.token;
     console.log("✅ ได้ Token แล้ว:", token);
 
-    // 🔹 Step 2: ใช้ Token เรียก Sensitive Data API (ตัวอย่าง: ข้อมูลประชาชน)
-    const sensitiveResponse = await axios.get(
-      "https://api.egov.go.th/ws/dopa/getCitizenProfile",
-      {
-        headers: { Authorization: `Bearer ${token}` },
-        params: {
-          citizenId: "1101700206181", 
-        },
-      }
-    );
+    // ✅ ส่ง token กลับไปให้ frontend ใช้กับ CZP SDK
+    res.json({
+      success: true,
+      user: { token },
+    });
 
-    const user = sensitiveResponse.data || {};
-
-    // ✅ บันทึกข้อมูลลง table User (พร้อมกัน)
-    await pool.query(
-      `INSERT INTO "User" (userId, citizenId, firstname, lastname, mobile, email)
-       VALUES ($1, $2, $3, $4, $5, $6)
-       ON CONFLICT (userId) DO UPDATE 
-       SET citizenId = EXCLUDED.citizenId,
-           firstname = EXCLUDED.firstname,
-           lastname = EXCLUDED.lastname,
-           mobile = EXCLUDED.mobile,
-           email = EXCLUDED.email`,
-      [
-        user.userId || "czp-user",
-        user.citizenId || "-",
-        user.firstname || "-",
-        user.lastname || "-",
-        user.mobile || "-",
-        user.email || "-",
-      ]
-    );
-
-    console.log("✅ ดึงข้อมูล Sensitive Data สำเร็จ");
-    res.json({ success: true, user });
   } catch (err) {
     console.error("❌ เกิดข้อผิดพลาด:", err.message);
     res.status(500).json({
       success: false,
-      message: "ไม่สามารถดึงข้อมูลจาก eGov ได้",
+      message: "ไม่สามารถขอ Token จาก eGov ได้",
       error: err.message,
     });
   }
 });
 
-module.exports = router;
-
-// ✅ บันทึกข้อมูลผู้ใช้ลงฐานข้อมูล
+// ✅ บันทึกข้อมูลผู้ใช้ลงฐานข้อมูล (Frontend ส่งมาหลังจากดึงจาก CZP SDK แล้ว)
 router.post("/saveUser", async (req, res) => {
   try {
     const { citizenId, firstname, lastname, mobile, email } = req.body;
@@ -86,13 +56,21 @@ router.post("/saveUser", async (req, res) => {
       return res.status(400).json({ success: false, message: "Missing citizenId" });
     }
 
-    const userId = `USR-${Date.now()}`; // สร้าง userId ชั่วคราว
+    const userId = `USR-${Date.now()}`;
+
     const result = await pool.query(
       `INSERT INTO "User" (userId, citizenId, firstname, lastname, mobile, email)
        VALUES ($1, $2, $3, $4, $5, $6)
+       ON CONFLICT (citizenId) DO UPDATE 
+       SET firstname = EXCLUDED.firstname,
+           lastname = EXCLUDED.lastname,
+           mobile = EXCLUDED.mobile,
+           email = EXCLUDED.email
        RETURNING *`,
       [userId, citizenId, firstname, lastname, mobile, email]
     );
+
+    console.log("💾 บันทึกข้อมูลผู้ใช้เรียบร้อย:", result.rows[0]);
 
     res.json({
       success: true,
@@ -108,3 +86,5 @@ router.post("/saveUser", async (req, res) => {
     });
   }
 });
+
+module.exports = router;
