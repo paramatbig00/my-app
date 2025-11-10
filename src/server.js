@@ -6,7 +6,7 @@ const { initDB } = require("./db");
 require("dotenv").config();
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3003;
 
 
 app.use(express.json());
@@ -23,6 +23,6 @@ app.get("/home", (req, res) => {
 app.use("/api", apiRoutes);
 
 app.listen(PORT, async () => {
-  await initDB(); // ✅ เรียกสร้าง table
+  await initDB(); //  เรียกสร้าง table
   console.log(`Server running at http://localhost:${PORT}`);
 });
