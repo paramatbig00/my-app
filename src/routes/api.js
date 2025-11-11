@@ -1,21 +1,13 @@
+// routes/api.js
 const express = require("express");
 const router = express.Router();
+const axios = require("axios");
 const { pool } = require("../db");
 require("dotenv").config();
 
-// 🧩 MOCK DATA (จำลองข้อมูลผู้ใช้จาก eGov)
-const mockSensitiveData = {
-  citizenId: "1234567890123",
-  firstName: "สมชาย",
-  lastName: "ใจดี",
-  mobile: "0812345678",
-  email: "somchai@example.com",
-  userId: "USR-MOCK-001"
-};
-
-// ==========================
-//  ✅ MOCK MODE /api/login
-// ==========================
+// ==============================
+// ✅ ดึงข้อมูลผู้ใช้จาก CZP จริง
+// ==============================
 router.post("/login", async (req, res) => {
   try {
     const { appId, mToken } = req.body;
@@ -29,10 +21,28 @@ router.post("/login", async (req, res) => {
 
     console.log("📥 รับข้อมูลจาก frontend:", { appId, mToken });
 
-    // 🧠 จำลองว่า token ถูกต้อง และได้ข้อมูลผู้ใช้
-    const userData = { ...mockSensitiveData, appId, mToken };
+    // 🔗 เรียก API ของ CZP
+    const czpResponse = await axios.post(
+      "https://czp.dga.or.th/cportal/api/v3/authen/info",
+      {},
+      {
+        headers: {
+          "Content-Type": "application/json",
+          "x-app-id": appId,
+          "x-token": mToken,
+        },
+      }
+    );
 
-    // ✅ บันทึก (mock) ลงฐานข้อมูล
+    const userData = czpResponse.data?.data || null;
+
+    if (!userData) {
+      throw new Error("ไม่พบข้อมูลผู้ใช้จาก CZP");
+    }
+
+    console.log("✅ ได้ข้อมูลผู้ใช้จาก CZP:", userData);
+
+    // ✅ บันทึกข้อมูลลงฐานข้อมูล
     const result = await pool.query(
       `INSERT INTO "User" (userId, citizenId, firstname, lastname, mobile, email)
        VALUES ($1, $2, $3, $4, $5, $6)
@@ -43,28 +53,28 @@ router.post("/login", async (req, res) => {
            email = EXCLUDED.email
        RETURNING *`,
       [
-        userData.userId,
-        userData.citizenId,
-        userData.firstName,
-        userData.lastName,
-        userData.mobile,
-        userData.email,
+        userData.userId || null,
+        userData.citizenId || null,
+        userData.firstName || null,
+        userData.lastName || null,
+        userData.mobile || null,
+        userData.email || null,
       ]
     );
 
-    console.log("✅ MOCK user saved:", result.rows[0]);
+    console.log("💾 บันทึกสำเร็จ:", result.rows[0]);
 
     res.json({
       success: true,
-      message: "ดึงข้อมูลจาก mock สำเร็จ",
+      message: "ดึงข้อมูลจาก CZP สำเร็จ",
       user: result.rows[0],
     });
   } catch (err) {
-    console.error("❌ MOCK Error:", err.message);
+    console.error("❌ Error:", err.response?.data || err.message);
     res.status(500).json({
       success: false,
-      message: "เกิดข้อผิดพลาด mock data",
-      error: err.message,
+      message: "เกิดข้อผิดพลาดในการเชื่อมต่อกับ CZP",
+      error: err.response?.data || err.message,
     });
   }
 });

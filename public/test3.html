@@ -3,15 +3,13 @@
 
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="https://czp.dga.or.th/cportal/sdk/css/v1/trunks.min.css" />
+  <link rel="stylesheet" href="https://czp.dga.or.th/cportal/sdk/css/v1/trunks.min.css"/>
   <link rel="preconnect" href="https://fonts.gstatic.com">
-  <link
-    href="https://fonts.googleapis.com/css2?family=Prompt:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap"
-    rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap" rel="stylesheet">    
   <link href="https://fonts.googleapis.com/css?family=Material+Icons|Material+Icons+Round" rel="stylesheet">
-
-  <script src="https://czp.dga.or.th/cportal/sdk/iu/v3/sdk.js"></script>
+  <script src="https://czp.dga.or.th/cportal/sdk/iu/v3/sdk.js"></script>  
   <title>ข้อมูลผู้ใช้ - eGov Connect</title>
+  <script src="https://czp.dga.or.th/cportal/sdk/iu/v3/sdk.js"></script>
 
   <style>
     body {
@@ -45,7 +43,6 @@
       0% {
         transform: rotate(0deg);
       }
-
       100% {
         transform: rotate(360deg);
       }
@@ -63,15 +60,8 @@
     }
 
     @keyframes fadeIn {
-      from {
-        opacity: 0;
-        transform: translateY(20px);
-      }
-
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
     .avatar {
@@ -87,10 +77,7 @@
       align-items: center;
     }
 
-    h2 {
-      text-align: center;
-      margin-bottom: 12px;
-    }
+    h2 { text-align: center; margin-bottom: 12px; }
 
     .user-info p {
       font-size: 16px;
@@ -160,20 +147,23 @@
 
 <script>
   async function initData() {
+    const loader = document.getElementById("loader");
+    const userCard = document.getElementById("userCard");
+    const errorMsg = document.getElementById("errorMsg");
+
     try {
       loader.style.display = "flex";
       userCard.style.display = "none";
       errorMsg.textContent = "";
 
-      // ✅ เรียก CZP Authen (ถูกต้องตาม Flow)
+      // ✅ ขอ Token จาก CZP SDK
       const auth = await window.czpSdk.authen();
       const appId = auth.appId;
       const mToken = auth.mToken;
 
-      console.log("AppID:", appId);
-      console.log("mToken:", mToken);
+      console.log("✅ ได้รับจาก SDK:", { appId, mToken });
 
-      // ✅ ส่งไป backend เพื่อดึงข้อมูล
+      // ✅ ส่งไปยัง backend เพื่อเรียกข้อมูลจริงจาก CZP
       const res = await fetch("/api/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -181,14 +171,18 @@
       });
 
       const data = await res.json();
-      if (!data.success) throw new Error(data.message);
+
+      if (!res.ok || !data.success) {
+        throw new Error(data.message || "ไม่สามารถดึงข้อมูลผู้ใช้ได้");
+      }
 
       const user = data.user || {};
 
-      document.getElementById("userId").textContent = user.userid || "-";
-      document.getElementById("citizenId").textContent = user.citizenid || "-";
-      document.getElementById("firstname").textContent = user.firstname || "-";
-      document.getElementById("lastname").textContent = user.lastname || "-";
+      // ✅ แสดงข้อมูลบนหน้าเว็บ
+      document.getElementById("userId").textContent = user.userid || user.userId || "-";
+      document.getElementById("citizenId").textContent = user.citizenid || user.citizenId || "-";
+      document.getElementById("firstname").textContent = user.firstname || user.firstName || "-";
+      document.getElementById("lastname").textContent = user.lastname || user.lastName || "-";
       document.getElementById("mobile").textContent = user.mobile || "-";
       document.getElementById("email").textContent = user.email || "-";
       document.getElementById("appId").textContent = appId;
@@ -196,18 +190,22 @@
 
       loader.style.display = "none";
       userCard.style.display = "block";
-
     } catch (err) {
-      console.error("เกิดข้อผิดพลาด:", err);
+      console.error("❌ เกิดข้อผิดพลาด:", err);
       loader.style.display = "none";
       userCard.style.display = "block";
-      errorMsg.textContent = "เกิดข้อผิดพลาด: " + err.message;
+
+      if (err.message.includes("401") || err.message.includes("invalid")) {
+        errorMsg.textContent = "Token ไม่ถูกต้องหรือหมดอายุ กรุณารีเฟรชหน้าใหม่";
+      } else {
+        errorMsg.textContent = "เกิดข้อผิดพลาด: " + err.message;
+      }
     }
   }
 
+  // 🔄 โหลดอัตโนมัติเมื่อเปิดหน้า
   window.addEventListener("load", initData);
 </script>
 
 </body>
-
 </html>
