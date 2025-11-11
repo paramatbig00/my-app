@@ -1,15 +1,14 @@
 <!DOCTYPE html>
 <html lang="th">
-
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="https://czp.dga.or.th/cportal/sdk/css/v1/trunks.min.css"/>
-  <link rel="preconnect" href="https://fonts.gstatic.com">
-  <link href="https://fonts.googleapis.com/css2?family=Prompt:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap" rel="stylesheet">    
-  <link href="https://fonts.googleapis.com/css?family=Material+Icons|Material+Icons+Round" rel="stylesheet">
-  <script src="https://czp.dga.or.th/cportal/sdk/iu/v3/sdk.js"></script>  
-  <title>ข้อมูลผู้ใช้ - eGov Connect</title>
+  
+  <link rel="stylesheet" href="https://czp.dga.or.th/cportal/sdk/css/v1/trunks.min.css" />
+  <link
+  href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap"
+  rel="stylesheet">
   <script src="https://czp.dga.or.th/cportal/sdk/iu/v3/sdk.js"></script>
+  <title>ข้อมูลผู้ใช้ - eGov Connect</title>
 
   <style>
     body {
@@ -18,7 +17,6 @@
       margin: 0;
       padding: 0;
     }
-
     .loader-container {
       display: flex;
       flex-direction: column;
@@ -28,7 +26,6 @@
       color: #333;
       text-align: center;
     }
-
     .spinner {
       border: 5px solid #eee;
       border-top: 5px solid #1976d2;
@@ -38,16 +35,10 @@
       animation: spin 1s linear infinite;
       margin-bottom: 20px;
     }
-
     @keyframes spin {
-      0% {
-        transform: rotate(0deg);
-      }
-      100% {
-        transform: rotate(360deg);
-      }
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
     }
-
     .user-card {
       display: none;
       max-width: 480px;
@@ -58,12 +49,10 @@
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
       animation: fadeIn 0.6s ease;
     }
-
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(20px); }
       to { opacity: 1; transform: translateY(0); }
     }
-
     .avatar {
       width: 100px;
       height: 100px;
@@ -76,16 +65,13 @@
       justify-content: center;
       align-items: center;
     }
-
     h2 { text-align: center; margin-bottom: 12px; }
-
     .user-info p {
       font-size: 16px;
       color: #444;
       margin: 8px 0;
       line-height: 1.5;
     }
-
     .meta-info {
       background: #f3f4f6;
       border-radius: 10px;
@@ -94,13 +80,11 @@
       font-size: 14px;
       color: #555;
     }
-
     .error {
       text-align: center;
       color: red;
       margin-top: 20px;
     }
-
     .refresh-btn {
       background: #1976d2;
       color: white;
@@ -111,7 +95,6 @@
       margin-top: 20px;
       font-size: 16px;
     }
-
     .refresh-btn:hover {
       background: #145ba0;
     }
@@ -145,67 +128,57 @@
     <div class="error" id="errorMsg"></div>
   </div>
 
-<script>
-  async function initData() {
-    const loader = document.getElementById("loader");
-    const userCard = document.getElementById("userCard");
-    const errorMsg = document.getElementById("errorMsg");
+  <script>
+    async function initData() {
+      const loader = document.getElementById("loader");
+      const userCard = document.getElementById("userCard");
+      const errorMsg = document.getElementById("errorMsg");
 
-    try {
-      loader.style.display = "flex";
-      userCard.style.display = "none";
-      errorMsg.textContent = "";
+      try {
+        loader.style.display = "flex";
+        userCard.style.display = "none";
+        errorMsg.textContent = "";
 
-      // ✅ ขอ Token จาก CZP SDK
-      const auth = await window.czpSdk.authen();
-      const appId = auth.appId;
-      const mToken = auth.mToken;
+        // ✅ ขอ token จาก CZP SDK
+        const auth = await window.czpSdk.authen();
+        const appId = auth.appId;
+        const mToken = auth.mToken;
 
-      console.log("✅ ได้รับจาก SDK:", { appId, mToken });
+        console.log("CZP Auth:", { appId, mToken });
 
-      // ✅ ส่งไปยัง backend เพื่อเรียกข้อมูลจริงจาก CZP
-      const res = await fetch("/api/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ appId, mToken }),
-      });
+        // ✅ ส่งไป backend
+        const res = await fetch("/api/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ appId, mToken }),
+        });
 
-      const data = await res.json();
+        const data = await res.json();
+        if (!data.success) throw new Error(data.message);
 
-      if (!res.ok || !data.success) {
-        throw new Error(data.message || "ไม่สามารถดึงข้อมูลผู้ใช้ได้");
-      }
+        const user = data.user || {};
 
-      const user = data.user || {};
+        // ✅ แสดงข้อมูล
+        document.getElementById("userId").textContent = user.userId || user.userid || "-";
+        document.getElementById("citizenId").textContent = user.citizenId || user.citizenid || "-";
+        document.getElementById("firstname").textContent = user.firstName || user.firstname || "-";
+        document.getElementById("lastname").textContent = user.lastName || user.lastname || "-";
+        document.getElementById("mobile").textContent = user.mobile || "-";
+        document.getElementById("email").textContent = user.email || "-";
+        document.getElementById("appId").textContent = appId;
+        document.getElementById("mToken").textContent = mToken;
 
-      // ✅ แสดงข้อมูลบนหน้าเว็บ
-      document.getElementById("userId").textContent = user.userid || user.userId || "-";
-      document.getElementById("citizenId").textContent = user.citizenid || user.citizenId || "-";
-      document.getElementById("firstname").textContent = user.firstname || user.firstName || "-";
-      document.getElementById("lastname").textContent = user.lastname || user.lastName || "-";
-      document.getElementById("mobile").textContent = user.mobile || "-";
-      document.getElementById("email").textContent = user.email || "-";
-      document.getElementById("appId").textContent = appId;
-      document.getElementById("mToken").textContent = mToken;
-
-      loader.style.display = "none";
-      userCard.style.display = "block";
-    } catch (err) {
-      console.error("❌ เกิดข้อผิดพลาด:", err);
-      loader.style.display = "none";
-      userCard.style.display = "block";
-
-      if (err.message.includes("401") || err.message.includes("invalid")) {
-        errorMsg.textContent = "Token ไม่ถูกต้องหรือหมดอายุ กรุณารีเฟรชหน้าใหม่";
-      } else {
-        errorMsg.textContent = "เกิดข้อผิดพลาด: " + err.message;
+        loader.style.display = "none";
+        userCard.style.display = "block";
+      } catch (err) {
+        console.error("Error:", err);
+        loader.style.display = "none";
+        userCard.style.display = "block";
+        errorMsg.textContent = "เกิดข้อผิดพลาด: " + (err.message || "ไม่สามารถดึงข้อมูลได้");
       }
     }
-  }
 
-  // 🔄 โหลดอัตโนมัติเมื่อเปิดหน้า
-  window.addEventListener("load", initData);
-</script>
-
+    window.addEventListener("load", initData);
+  </script>
 </body>
 </html>
