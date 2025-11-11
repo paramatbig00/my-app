@@ -158,59 +158,56 @@
     <div class="error" id="errorMsg"></div>
   </div>
 
-  <script>
-    const loader = document.getElementById("loader");
-    const userCard = document.getElementById("userCard");
-    const errorMsg = document.getElementById("errorMsg");
+<script>
+  async function initData() {
+    try {
+      loader.style.display = "flex";
+      userCard.style.display = "none";
+      errorMsg.textContent = "";
 
-    async function initData() {
-      try {
-        loader.style.display = "flex";
-        userCard.style.display = "none";
-        errorMsg.textContent = "";
+      // ✅ เรียก CZP Authen (ถูกต้องตาม Flow)
+      const auth = await window.czpSdk.authen();
+      const appId = auth.appId;
+      const mToken = auth.mToken;
 
-        // ✅ ดึง appId และ mToken จาก CZP SDK
-        const appId = await window.czpSdk.getAppId();
-        const mToken = await window.czpSdk.getToken();
+      console.log("AppID:", appId);
+      console.log("mToken:", mToken);
 
-        console.log("AppID:", appId);
-        console.log("mToken:", mToken);
+      // ✅ ส่งไป backend เพื่อดึงข้อมูล
+      const res = await fetch("/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ appId, mToken }),
+      });
 
-        // เรียก backend API เพื่อ login และดึงข้อมูลจริง
-        const res = await fetch("/api/login", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ appId, mToken }),
-        });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.message);
 
-        const data = await res.json();
-        if (!data.success) throw new Error(data.message || "ไม่สามารถดึงข้อมูลได้");
+      const user = data.user || {};
 
-        const user = data.user || {};
+      document.getElementById("userId").textContent = user.userid || "-";
+      document.getElementById("citizenId").textContent = user.citizenid || "-";
+      document.getElementById("firstname").textContent = user.firstname || "-";
+      document.getElementById("lastname").textContent = user.lastname || "-";
+      document.getElementById("mobile").textContent = user.mobile || "-";
+      document.getElementById("email").textContent = user.email || "-";
+      document.getElementById("appId").textContent = appId;
+      document.getElementById("mToken").textContent = mToken;
 
-        // ✅ แสดงผลข้อมูล
-        document.getElementById("userId").textContent = user.userid || "-";
-        document.getElementById("citizenId").textContent = user.citizenid || "-";
-        document.getElementById("firstname").textContent = user.firstname || "-";
-        document.getElementById("lastname").textContent = user.lastname || "-";
-        document.getElementById("mobile").textContent = user.mobile || "-";
-        document.getElementById("email").textContent = user.email || "-";
-        document.getElementById("appId").textContent = appId;
-        document.getElementById("mToken").textContent = mToken;
+      loader.style.display = "none";
+      userCard.style.display = "block";
 
-        loader.style.display = "none";
-        userCard.style.display = "block";
-
-      } catch (err) {
-        console.error("เกิดข้อผิดพลาด:", err);
-        loader.style.display = "none";
-        userCard.style.display = "block";
-        errorMsg.textContent = "เกิดข้อผิดพลาด: " + err.message;
-      }
+    } catch (err) {
+      console.error("เกิดข้อผิดพลาด:", err);
+      loader.style.display = "none";
+      userCard.style.display = "block";
+      errorMsg.textContent = "เกิดข้อผิดพลาด: " + err.message;
     }
+  }
 
-    window.addEventListener("load", initData);
-  </script>
+  window.addEventListener("load", initData);
+</script>
+
 </body>
 
 </html>
