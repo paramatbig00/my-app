@@ -27,7 +27,7 @@ app.get("/home", (req, res) => {
 });
 
 // ✅ ใช้งาน API routes
-app.use("/api", apiRoutes);
+app.use("/test3/api", apiRoutes);
 
 // ✅ Start server + init DB
 app.listen(PORT, async () => {

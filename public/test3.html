@@ -196,7 +196,6 @@
       };
 
       console.log("เริ่มดึงข้อมูลผู้ใช้...");
-      log("เริ่มดึงข้อมูลผู้ใช้...");
 
       try {
         loader.style.display = "flex";
@@ -206,6 +205,7 @@
         // ✅ [1] Validate เพื่อขอ Token จาก backend (.env)
         log("กำลังเรียก /api/validate...");
         const validateRes = await axios.get("/api/validate");
+        ehc
         const token = validateRes.data.token;
         log(`✅ ได้ Token จาก validate: ${token}`);
 

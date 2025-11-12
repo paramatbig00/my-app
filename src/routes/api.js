@@ -24,7 +24,7 @@ router.get("/validate", async (req, res) => {
 
     const { AGENT_ID, CONSUMER_KEY, CONSUMER_SECRET } = process.env;
     const url = `https://api.egov.go.th/ws/auth/validate?ConsumerSecret=${CONSUMER_SECRET}&AgentID=${AGENT_ID}`;
-
+    
     console.log("🔗 Requesting:", url);
 
     const response = await axiosInstance.get(url, {
