@@ -11,7 +11,9 @@
   <link href="https://fonts.googleapis.com/css?family=Material+Icons|Material+Icons+Round" rel="stylesheet">
 
   <!-- ✅ SDK -->
+   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
   <script src="https://czp.dga.or.th/cportal/sdk/iu/v3/sdk.js"></script>
+  <script src="./initData.js"></script>
 
   <style>
     :root {
@@ -184,91 +186,6 @@
   </div>
 
   <!-- ✅ Script -->
-  <script>
-    
-    require("dotenv").config();
-    const axios = require("axios");
 
-    async function initData() {
-      const loader = document.getElementById("loader");
-      const card = document.getElementById("userCard");
-      const errorMsg = document.getElementById("errorMsg");
-      const BASE_API = "https://api.egov.go.th/ws";
-      const consumerSecret = "izDMfcvMutU";
-      const agentId = process.env.AgentId;
-      const consumerKey = process.env.CONSUMER_KEY;
-
-      const apiAuth = `${BASE_API}/auth/validate`;
-
-      const headerAuth = {
-      "Consumer-Key": process.env.CONSUMER_KEY,
-      "Content-Type": "application/json",
-      Token: mToken};
-
-      const headers = {
-      "Consumer-Key": process.env.CONSUMER_KEY,
-      "Content-Type": "application/json",
-      Token: mToken,
-    };
-
-      try {
-        loader.style.display = "flex";
-        card.style.display = "none";
-        errorMsg.textContent = "";
-
-        const params = new URLSearchParams(window.location.search);
-        const appId = window.czpSdk.getAppId() || params.get("appId");
-        const mToken = window.czpSdk.getToken() || params.get("mToken");
-
-        if (!appId || !mToken) throw new Error("ไม่พบ appId หรือ mToken");
-
-        const getAuth = await axios.get(apiAuth, {
-  params: {
-    ConsumerSecret: consumerSecret,
-    AgentID: agentId
-  },
-  headers: headerAuth
-});
-        if (getAuth.data.success !== true) {
-          throw new Error("การตรวจสอบโทเค็นล้มเหลว: " + getAuth.data.message);
-        }
-
-
-        // const res = await fetch("/api/login", {
-        //   method: "POST",
-        //   headers: { "Content-Type": "application/json" },
-        //   body: JSON.stringify({ appId, mToken }),
-        // });
-
-        // const text = await res.text();
-        // let data;
-        // try { data = JSON.parse(text); } 
-        // catch { throw new Error("Response ไม่ใช่ JSON: " + text.substring(0, 60)); }
-
-        // if (!data.success) throw new Error(data.message);
-        // const user = data.user;
-
-        // document.getElementById("userId").textContent = user.userId || "-";
-        // document.getElementById("citizenId").textContent = user.citizenId || "-";
-        // document.getElementById("firstname").textContent = user.firstName || "-";
-        // document.getElementById("lastname").textContent = user.lastName || "-";
-        // document.getElementById("mobile").textContent = user.mobile || "-";
-        // document.getElementById("email").textContent = user.email || "-";
-        document.getElementById("appId").textContent = appId;
-        document.getElementById("mToken").textContent = mToken;
-        document.getElementById("testToken").textContent = getAuth.result || "-";
-
-        loader.style.display = "none";
-        card.style.display = "block";
-      } catch (err) {
-        console.error(err);
-        loader.style.display = "none";
-        card.style.display = "block";
-        errorMsg.textContent = "เกิดข้อผิดพลาด: " + err.message;
-      }
-    }
-
-    window.addEventListener("load", initData);
-  </script>
 </body>
 </html>
