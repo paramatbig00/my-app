@@ -136,12 +136,12 @@
 <body>
   <div id="loader" class="loader-container">
     <div class="spinner"></div>
-    <p>กำลังดึงข้อมูลจากระบบ eGov...</p>
+    <p>กำลังดึงข้อมูลจากระบบ ....</p>
   </div>
 
   <div id="userCard" class="card" style="display:none;">
     <div class="card-header">
-      <h2>ข้อมูลผู้ใช้จาก eGov</h2>
+      <h2>ข้อมูลผู้ใช้</h2>
     </div>
 
     <div class="card-body">
@@ -180,6 +180,13 @@
       const loader = document.getElementById("loader");
       const card = document.getElementById("userCard");
       const errorMsg = document.getElementById("errorMsg");
+      console.log("AppID และ mToken" = appId, mToken);
+      console.log("เริ่มดึงข้อมูลผู้ใช้...");
+      console.log("🔍 Using ENV", {
+        AGENT_ID: process.env.AGENT_ID,
+        CONSUMER_KEY: process.env.CONSUMER_KEY,
+        CONSUMER_SECRET: process.env.CONSUMER_SECRET,
+      });
 
       try {
         loader.style.display = "flex";
