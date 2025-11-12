@@ -212,14 +212,17 @@
           throw new Error("การตรวจสอบโทเค็นล้มเหลว: " + (getAuth.data.message || "-"));
         }
 
-        const getData = await axios.get(apiGetData, {
-          body: { appId: appId,mToken: mToken },
-          headers: {
-            "Consumer-Key": consumerKey,
-            "Content-Type": "application/json",
-            "Token": getAuth.result
-          }
-        });
+        const getData = await axios.post(
+  apiGetData,
+  { appId: appId, mToken: mToken },
+  {
+    headers: {
+      "Consumer-Key": consumerKey,
+      "Content-Type": "application/json",
+      "Token": getAuth.data?.result || getAuth.result
+    }
+  }
+);
 
         this.userData = getData.data;
 
