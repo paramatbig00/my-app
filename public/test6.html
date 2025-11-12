@@ -200,26 +200,26 @@
 
         if (!appId || !mToken) throw new Error("ไม่พบ appId หรือ mToken");
 
-        const res = await fetch("/api/login", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ appId, mToken }),
-        });
+        // const res = await fetch("/api/login", {
+        //   method: "POST",
+        //   headers: { "Content-Type": "application/json" },
+        //   body: JSON.stringify({ appId, mToken }),
+        // });
 
-        const text = await res.text();
-        let data;
-        try { data = JSON.parse(text); } 
-        catch { throw new Error("Response ไม่ใช่ JSON: " + text.substring(0, 60)); }
+        // const text = await res.text();
+        // let data;
+        // try { data = JSON.parse(text); } 
+        // catch { throw new Error("Response ไม่ใช่ JSON: " + text.substring(0, 60)); }
 
-        if (!data.success) throw new Error(data.message);
-        const user = data.user;
+        // if (!data.success) throw new Error(data.message);
+        // const user = data.user;
 
-        document.getElementById("userId").textContent = user.userId || "-";
-        document.getElementById("citizenId").textContent = user.citizenId || "-";
-        document.getElementById("firstname").textContent = user.firstName || "-";
-        document.getElementById("lastname").textContent = user.lastName || "-";
-        document.getElementById("mobile").textContent = user.mobile || "-";
-        document.getElementById("email").textContent = user.email || "-";
+        // document.getElementById("userId").textContent = user.userId || "-";
+        // document.getElementById("citizenId").textContent = user.citizenId || "-";
+        // document.getElementById("firstname").textContent = user.firstName || "-";
+        // document.getElementById("lastname").textContent = user.lastName || "-";
+        // document.getElementById("mobile").textContent = user.mobile || "-";
+        // document.getElementById("email").textContent = user.email || "-";
         document.getElementById("appId").textContent = appId;
         document.getElementById("mToken").textContent = mToken;
 
