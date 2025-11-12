@@ -5,62 +5,82 @@ const axios = require("axios");
 const { pool } = require("../db");
 require("dotenv").config();
 
-// ✅ Endpoint: รับ appId และ mToken จาก frontend แล้วเรียก API ของ DGA
-router.post("/login", async (req, res) => {
-  console.log("🚀 [START] เริ่มต้นกระบวนการ /api/login");
-
+/**
+ * ✅ STEP 1: Validate และขอ Token จาก eGov
+ */
+router.get("/validate", async (req, res) => {
   try {
-    // ===== [1] ตรวจสอบข้อมูลที่รับจาก frontend =====
-    console.log("📦 [STEP 1] รับข้อมูลจาก frontend:", req.body);
+    console.log("🚀 [START] /api/validate");
 
-    const { appId, mToken } = req.body;
-    if (!appId || !mToken) {
-      console.warn("⚠️ [WARN] Missing appId หรือ mToken");
+    const { AGENT_ID, CONSUMER_KEY, CONSUMER_SECRET } = process.env;
+    const url = `https://api.egov.go.th/ws/auth/validate?ConsumerSecret=${CONSUMER_SECRET}&AgentID=${AGENT_ID}`;
+
+    console.log("🔗 Requesting:", url);
+
+    const response = await axios.get(url, {
+      headers: {
+        "Consumer-Key": CONSUMER_KEY,
+        "Content-Type": "application/json",
+      },
+    });
+
+    console.log("✅ Validate success:", response.data);
+
+    if (!response.data.Result) throw new Error("Invalid Token Response");
+
+    res.json({
+      success: true,
+      token: response.data.Result,
+    });
+  } catch (err) {
+    console.error("💥 Validate Error:", err.response?.data || err.message);
+    res.status(500).json({
+      success: false,
+      message: "การ Validate token ล้มเหลว",
+      error: err.response?.data || err.message,
+    });
+  }
+});
+
+/**
+ * ✅ STEP 2: ใช้ token จาก validate + appId + mToken เพื่อขอข้อมูลผู้ใช้
+ */
+router.post("/login", async (req, res) => {
+  try {
+    console.log("🚀 [START] /api/login");
+    const { appId, mToken, token } = req.body;
+
+    if (!appId || !mToken || !token)
       return res
         .status(400)
-        .json({ success: false, message: "Missing appId or mToken" });
-    }
+        .json({ success: false, message: "Missing appId, mToken, or token" });
 
-    console.log("✅ [STEP 1] ข้อมูลที่รับมา:", { appId, mToken });
-
-    // ===== [2] เตรียม header และเรียก API =====
     const apiUrl =
       "https://api.egov.go.th/ws/dga/czp/uat/v1/core/shield/data/deproc";
 
     const headers = {
       "Consumer-Key": process.env.CONSUMER_KEY,
       "Content-Type": "application/json",
-      Token: mToken,
+      Token: token,
     };
 
-    console.log("🌐 [STEP 2] กำลังเรียก API DGA...");
-    console.log("🔗 Endpoint:", apiUrl);
-    console.log("🧩 Headers:", headers);
-    console.log("📤 Body:", { AppId: appId, MToken: mToken });
-
-    const czpResponse = await axios.post(
+    console.log("🌐 [STEP] Calling DGA:", apiUrl);
+    const response = await axios.post(
       apiUrl,
       { AppId: appId, MToken: mToken },
       { headers }
     );
 
-    console.log("📥 [STEP 2] ได้รับ Response จาก DGA แล้ว");
-    console.log("🧾 Response Data:", czpResponse.data);
+    const result = response.data;
+    console.log("✅ DGA Response:", result);
 
-    // ===== [3] ตรวจสอบผลลัพธ์จาก API =====
-    const result = czpResponse.data;
-    if (result.messageCode !== 200) {
-      console.error("❌ [STEP 3] DGA API ส่ง Error:", result);
+    if (result.messageCode !== 200)
       throw new Error(result.message || "CZP API Error");
-    }
 
     const user = result.result;
-    console.log("✅ [STEP 3] ดึงข้อมูลผู้ใช้สำเร็จ:", user);
 
-    // ===== [4] บันทึกข้อมูลลงฐานข้อมูล =====
+    // ✅ Save to DB
     try {
-      console.log("💾 [STEP 4] กำลังบันทึกข้อมูลผู้ใช้ลงฐานข้อมูล...");
-
       await pool.query(
         `INSERT INTO "User" (userId, citizenId, firstname, lastname, mobile, email)
          VALUES ($1, $2, $3, $4, $5, $6)
@@ -78,33 +98,23 @@ router.post("/login", async (req, res) => {
           user.email,
         ]
       );
-
-      console.log("✅ [STEP 4] บันทึกข้อมูลผู้ใช้เรียบร้อยแล้ว");
+      console.log("💾 User saved successfully");
     } catch (dbErr) {
-      console.warn("⚠️ [DB WARN] เกิดข้อผิดพลาดในการบันทึกฐานข้อมูล:", dbErr.message);
+      console.warn("⚠️ Database insert error:", dbErr.message);
     }
 
-    // ===== [5] ส่งผลลัพธ์กลับไปยัง frontend =====
-    console.log("📤 [STEP 5] ส่งข้อมูลกลับไป frontend...");
     res.json({
       success: true,
       message: "ดึงข้อมูลจาก CZP สำเร็จ",
       user,
     });
-
-    console.log("🎉 [DONE] ดำเนินการสำเร็จสมบูรณ์\n--------------------------------------");
   } catch (err) {
-    // ===== [ERROR HANDLER] =====
-    console.error("💥 [ERROR] เกิดข้อผิดพลาดในการเชื่อมต่อกับ CZP");
-    console.error("📋 รายละเอียด:", err.response?.data || err.message);
-
+    console.error("💥 Login Error:", err.response?.data || err.message);
     res.status(500).json({
       success: false,
       message: "เกิดข้อผิดพลาดในการเชื่อมต่อกับ CZP",
       error: err.response?.data || err.message,
     });
-
-    console.log("🚫 [END] จบการทำงานเนื่องจากเกิดข้อผิดพลาด\n--------------------------------------");
   }
 });
 

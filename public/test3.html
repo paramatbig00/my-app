@@ -6,24 +6,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>ข้อมูลผู้ใช้ - eGov Connect</title>
 
-  <!-- ✅ Font & Style -->
   <link rel="stylesheet" href="https://czp.dga.or.th/cportal/sdk/css/v1/trunks.min.css" />
   <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css?family=Material+Icons|Material+Icons+Round" rel="stylesheet">
 
   <style>
-    :root {
-      --primary: #1976d2;
-      --primary-dark: #125ca4;
-      --bg-light: #f5f7fb;
-      --text-dark: #333;
-    }
-
     body {
       font-family: 'Prompt', sans-serif;
-      background: var(--bg-light);
+      background: #f3f5fa;
       margin: 0;
-      padding: 0;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -32,117 +23,79 @@
 
     .card {
       width: 100%;
-      max-width: 480px;
+      max-width: 520px;
       background: #fff;
-      border-radius: 20px;
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+      border-radius: 18px;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
       overflow: hidden;
-      transform: translateY(0);
-      transition: all 0.4s ease;
       animation: fadeIn 0.5s ease;
     }
 
-    .card:hover {
-      transform: translateY(-2px);
-    }
-
     .card-header {
-      background: var(--primary);
+      background: #1976d2;
       color: #fff;
+      padding: 20px 16px;
       text-align: center;
-      padding: 24px 16px 16px;
-    }
-
-    .avatar {
-      width: 100px;
-      height: 100px;
-      border-radius: 50%;
-      background: #fff;
-      color: var(--primary);
-      font-size: 48px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin: 0 auto 10px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
     }
 
     .card-body {
-      padding: 24px;
-      color: var(--text-dark);
+      padding: 20px 24px;
+      color: #333;
     }
 
-    .info-group {
-      margin-bottom: 16px;
+    .info-section {
+      background: #f7f8fc;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 20px;
     }
 
-    .info-group p {
-      margin: 6px 0;
+    .info-section h3 {
+      margin-top: 0;
+      font-size: 16px;
+      color: #1976d2;
+    }
+
+    .info-row {
+      display: flex;
+      justify-content: space-between;
       font-size: 15px;
-    }
-
-    .meta {
-      background: #f1f3f8;
-      border-radius: 10px;
-      padding: 12px 16px;
-      margin-top: 16px;
-      font-size: 14px;
-      color: #555;
+      padding: 4px 0;
     }
 
     .btn-refresh {
-      display: block;
       width: 100%;
-      background: var(--primary);
+      background: #1976d2;
       color: white;
       border: none;
       padding: 12px;
-      font-size: 16px;
       border-radius: 10px;
-      margin-top: 16px;
+      font-size: 16px;
       cursor: pointer;
       transition: background 0.3s;
     }
 
     .btn-refresh:hover {
-      background: var(--primary-dark);
+      background: #125ca4;
     }
 
     .error {
       color: red;
       text-align: center;
-      margin-top: 12px;
+      margin-top: 10px;
       font-weight: 500;
     }
 
-    .loader-container {
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      text-align: center;
-      color: #555;
-    }
-
-    .spinner {
-      border: 5px solid #eee;
-      border-top: 5px solid var(--primary);
-      border-radius: 50%;
-      width: 60px;
-      height: 60px;
-      animation: spin 1s linear infinite;
-      margin-bottom: 16px;
-    }
-
-    @keyframes spin {
-      0% {
-        transform: rotate(0deg);
-      }
-
-      100% {
-        transform: rotate(360deg);
-      }
+    .log-box {
+      background: #1e1e1e;
+      color: #00ff99;
+      font-family: monospace;
+      font-size: 13px;
+      padding: 12px;
+      border-radius: 10px;
+      height: 160px;
+      overflow-y: auto;
+      margin-top: 15px;
     }
 
     @keyframes fadeIn {
@@ -156,136 +109,132 @@
         transform: translateY(0);
       }
     }
+
+    .loader-container {
+      text-align: center;
+      color: #555;
+    }
+
+    .spinner {
+      border: 5px solid #eee;
+      border-top: 5px solid #1976d2;
+      border-radius: 50%;
+      width: 60px;
+      height: 60px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 16px;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
   </style>
 </head>
 
 <body>
-  <!-- ✅ Loading State -->
   <div id="loader" class="loader-container">
     <div class="spinner"></div>
     <p>กำลังดึงข้อมูลจากระบบ eGov...</p>
   </div>
 
-  <!-- ✅ User Card -->
   <div id="userCard" class="card" style="display:none;">
     <div class="card-header">
       <h2>ข้อมูลผู้ใช้จาก eGov</h2>
     </div>
 
     <div class="card-body">
-      <div class="info-group">
-        <p><strong>User ID:</strong> <span id="userId">-</span></p>
-        <p><strong>รหัสประชาชน:</strong> <span id="citizenId">-</span></p>
-        <p><strong>ชื่อ:</strong> <span id="firstname">-</span></p>
-        <p><strong>นามสกุล:</strong> <span id="lastname">-</span></p>
-        <p><strong>เบอร์มือถือ:</strong> <span id="mobile">-</span></p>
-        <p><strong>อีเมล:</strong> <span id="email">-</span></p>
+      <div class="info-section">
+        <h3>ข้อมูลส่วนตัว</h3>
+        <div class="info-row"><span>รหัสประชาชน:</span><span id="citizenId">-</span></div>
+        <div class="info-row"><span>ชื่อ:</span><span id="firstname">-</span></div>
+        <div class="info-row"><span>นามสกุล:</span><span id="lastname">-</span></div>
+        <div class="info-row"><span>เบอร์มือถือ:</span><span id="mobile">-</span></div>
+        <div class="info-row"><span>อีเมล:</span><span id="email">-</span></div>
       </div>
 
-      <div class="meta">
-        <p><strong>App ID:</strong> <span id="appId">-</span></p>
-        <p><strong>mToken:</strong> <span id="mToken">-</span></p>
-        <p><strong>userdata:</strong> <span id="user-data">-</span></p>
-        <p><strong>TEST Token:</strong> <span id="testToken">-</span></p>
-        <p><strong>Data Mock:</strong> <span id="dataMock">-</span></p>
+      <div class="info-section">
+        <h3>ข้อมูลระบบ</h3>
+        <div class="info-row"><span>App ID:</span><span id="appId">-</span></div>
+        <div class="info-row"><span>mToken:</span><span id="mToken">-</span></div>
+        <div class="info-row"><span>Agent ID:</span><span id="agentId">-</span></div>
+        <div class="info-row"><span>Consumer Key:</span><span id="consumerKey">-</span></div>
       </div>
 
       <button class="btn-refresh" onclick="initData()">🔄 รีเฟรชข้อมูล</button>
       <div class="error" id="errorMsg"></div>
+
+      <div class="info-section">
+        <h3>Log</h3>
+        <div id="logBox" class="log-box"></div>
+      </div>
     </div>
   </div>
 
-  <!-- ✅ Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
   <script src="https://czp.dga.or.th/cportal/sdk/js/v1/trunks.min.js"></script>
 
-<script>
-  async function initData() {
-    const loader = document.getElementById("loader");
-    const card = document.getElementById("userCard");
-    const errorMsg = document.getElementById("errorMsg");
+  <script>
+    async function initData() {
+      const loader = document.getElementById("loader");
+      const card = document.getElementById("userCard");
+      const errorMsg = document.getElementById("errorMsg");
 
-    const BASE_API = "https://api.egov.go.th/ws";
+      try {
+        loader.style.display = "flex";
+        card.style.display = "none";
+        errorMsg.textContent = "";
 
-    const apiAuth = `${BASE_API}/auth/validate`;
-    const apiGetData = `${BASE_API}/dga/czp/uat/v1/core/shield/data/mock`;
+        // ✅ [1] Validate เพื่อขอ Token จาก backend (.env)
+        const validateRes = await axios.get("/api/validate");
+        const token = validateRes.data.token;
+        console.log("✅ Token จาก validate:", token);
 
-    try {
-      loader.style.display = "flex";
-      card.style.display = "none";
-      errorMsg.textContent = "";
+        // ✅ [2] ดึง appId และ mToken จาก SDK
+        const appId =
+          (window.czpSdk && window.czpSdk.getAppId?.()) ||
+          new URLSearchParams(window.location.search).get("appId");
+        const mToken =
+          (window.czpSdk && window.czpSdk.getToken?.()) ||
+          new URLSearchParams(window.location.search).get("mToken");
 
-      const params = new URLSearchParams(window.location.search);
-      const appId = (window.czpSdk && window.czpSdk.getAppId?.()) || params.get("appId");
-      const mToken = (window.czpSdk && window.czpSdk.getToken?.()) || params.get("mToken");
-      const DataMock = (window.czpSdk && window.czpSdk.ntResponse?.()) || params.get("data"); 
-      console.log("DataMock =", DataMock);
-      console.log("appId =", appId);
-      console.log("mToken =", mToken); 
+        console.log("📱 appId:", appId);
+        console.log("🔑 mToken:", mToken);
 
-
-      if (!appId || !mToken) throw new Error("ไม่พบ appId หรือ mToken");
-
-      // ✅ Auth validate
-      const getAuth = await axios.get(apiAuth, {
-        params: { ConsumerSecret: consumerSecret, AgentID: agentId },
-        headers: {
-          "Consumer-Key": consumerKey,
-          "Content-Type": "application/json",
-          "Token": mToken
+        if (!appId || !mToken) {
+          throw new Error("ไม่พบ appId หรือ mToken (หมดอายุหรือยังไม่ได้รับสิทธิ์)");
         }
-      });
 
-      console.log("getAuth.data =", getAuth.data);
-      
-      if (getAuth.data.success !== true) {
-        throw new Error("การตรวจสอบโทเค็นล้มเหลว: " + (getAuth.data.message || "-"));
+        // ✅ [3] ส่ง appId, mToken, token ไป backend เพื่อดึงข้อมูลผู้ใช้
+        const res = await axios.post("/api/login", { appId, mToken, token });
+        const data = res.data.user;
+
+        console.log("👤 ข้อมูลผู้ใช้:", data);
+
+        // ✅ [4] อัปเดต UI
+        document.getElementById("appId").textContent = appId;
+        document.getElementById("mToken").textContent = mToken;
+        document.getElementById("userId").textContent = data.userId || "-";
+        document.getElementById("citizenId").textContent = data.citizenId || "-";
+        document.getElementById("firstname").textContent = data.firstName || "-";
+        document.getElementById("lastname").textContent = data.lastName || "-";
+        document.getElementById("mobile").textContent = data.mobile || "-";
+        document.getElementById("email").textContent = data.email || "-";
+        document.getElementById("testToken").textContent = token;
+
+        loader.style.display = "none";
+        card.style.display = "block";
+      } catch (err) {
+        console.error("❌ ERROR:", err);
+        loader.style.display = "none";
+        card.style.display = "block";
+        errorMsg.textContent = "เกิดข้อผิดพลาด: " + err.message;
       }
-
-      // ✅ Get data using validated token
-      const getData = await axios.post(
-        apiGetData,
-        { appId, mToken },
-        {
-          headers: {
-            "Consumer-Key": consumerKey,
-            "Content-Type": "application/json",
-            "Token": getAuth.data?.Result || getAuth.Result
-          }
-        }
-      );
-
-      console.log("getData =", getData.data);
-
-      const userData = getData.data;
-
-      // ✅ Update UI
-      document.getElementById("appId").textContent = appId;
-      document.getElementById("mToken").textContent = mToken;
-      document.getElementById("userId").textContent = userData.userId || "-";
-      document.getElementById("citizenId").textContent = userData.citizenId || "-";
-      document.getElementById("firstname").textContent = userData.firstname || "-";
-      document.getElementById("lastname").textContent = userData.lastname || "-";
-      document.getElementById("mobile").textContent = userData.mobile || "-";
-      document.getElementById("email").textContent = userData.email || "-";
-      document.getElementById("mToken").textContent = mToken;
-      document.getElementById("appId").textContent = appId;
-      document.getElementById("dataMock").textContent = DataMock || "-";
-      document.getElementById("testToken").textContent = JSON.stringify(getAuth.data.result || getAuth.data.token);
-      document.getElementById("user-data").textContent = JSON.stringify(userData, null, 2);
-
-      loader.style.display = "none";
-      card.style.display = "block";
-    } catch (err) {
-      console.error("❌ ERROR:", err);
-      loader.style.display = "none";
-      card.style.display = "block";
-      errorMsg.textContent = "เกิดข้อผิดพลาด: " + err.message;
     }
-  }
 
-  window.addEventListener("load", initData);
-</script>
+    window.addEventListener("load", initData);
+  </script>
 
 </body>
 
