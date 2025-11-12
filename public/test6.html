@@ -158,6 +158,7 @@
       <div class="meta">
         <p><strong>App ID:</strong> <span id="appId">-</span></p>
         <p><strong>mToken:</strong> <span id="mToken">-</span></p>
+        <p><strong>IEIE:</strong> <span id="data-eiei">-</span></p>
         <p><strong>TEST Token:</strong> <span id="testToken">-</span></p>
       </div>
 
@@ -183,6 +184,10 @@
 
       const apiAuth = `${BASE_API}/auth/validate`;
 
+      const apiGetData = 'https://api.egov.go.th/ws/dga/czp/uat/v1/core/shield/data/mock'
+
+      const userData = '';
+
       try {
         loader.style.display = "flex";
         card.style.display = "none";
@@ -207,11 +212,24 @@
           throw new Error("การตรวจสอบโทเค็นล้มเหลว: " + (getAuth.data.message || "-"));
         }
 
+        const getData = await axios.get(apiGetData, {
+          body: { appId: appId,mToken: mToken },
+          headers: {
+            "Consumer-Key": consumerKey,
+            "Content-Type": "application/json",
+            "Token": getAuth.result
+          }
+        });
+
+        this.userData = getData.data;
+
+
+
         // ✅ แสดงผล
         document.getElementById("appId").textContent = appId;
         document.getElementById("mToken").textContent = mToken;
         document.getElementById("testToken").textContent = JSON.stringify(getAuth.data.result || getAuth.data);
-
+        document.getElementById("data-eiei").textContent = userData;
         loader.style.display = "none";
         card.style.display = "block";
       } catch (err) {
