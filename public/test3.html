@@ -3,18 +3,18 @@
 
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>ข้อมูลผู้ใช้ - DGA Connect</title>
-
-  <!-- ✅ CZP SDK (แก้ path ให้ถูกต้อง) -->
-  <link rel="stylesheet" href="https://czp.dga.or.th/cportal/sdk/css/v1/trunks.css" />
-  <script src="https://czp.dga.or.th/cportal/sdk/js/v1/trunks.js"></script>
-
-  <!-- ✅ Font -->
-  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://czp.dga.or.th/cportal/sdk/css/v1/trunks.min.css" />
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Prompt:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap"
+    rel="stylesheet">
   <link href="https://fonts.googleapis.com/css?family=Material+Icons|Material+Icons+Round" rel="stylesheet">
 
+
+  <title>ข้อมูลผู้ใช้ - DGA Connect</title>
   <!-- ✅ Axios ต้องมาก่อนใช้งาน -->
-  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <script src="https://czp.dga.or.th/cportal/sdk/iu/v3/sdk.js"></script>
+
 
   <style>
     body {
@@ -109,6 +109,7 @@
         opacity: 0;
         transform: translateY(15px);
       }
+
       to {
         opacity: 1;
         transform: translateY(0);
@@ -245,4 +246,5 @@
     window.addEventListener("load", initData);
   </script>
 </body>
+
 </html>
