@@ -185,7 +185,7 @@
       <div class="meta">
         <p><strong>App ID:</strong> <span id="appId">-</span></p>
         <p><strong>mToken:</strong> <span id="mToken">-</span></p>
-        <p><strong>IEIE:</strong> <span id="data-eiei">-</span></p>
+        <p><strong>userdata:</strong> <span id="user-data">-</span></p>
         <p><strong>TEST Token:</strong> <span id="testToken">-</span></p>
       </div>
 
@@ -218,8 +218,11 @@
       errorMsg.textContent = "";
 
       const params = new URLSearchParams(window.location.search);
-      const appId = window.czpSdk.getAppId()|| params.get("appId");
-      const mToken = window.czpSdk.getToken() || params.get("mToken");
+      const appId = (window.czpSdk && window.czpSdk.getAppId?.()) || params.get("appId");
+      const mToken = (window.czpSdk && window.czpSdk.getToken?.()) || params.get("mToken");
+      console.log("appId =", appId);
+      console.log("mToken =", mToken); 
+
 
       if (!appId || !mToken) throw new Error("ไม่พบ appId หรือ mToken");
 
@@ -234,7 +237,7 @@
       });
 
       console.log("getAuth.data =", getAuth.data);
-
+      
       if (getAuth.data.success !== true) {
         throw new Error("การตรวจสอบโทเค็นล้มเหลว: " + (getAuth.data.message || "-"));
       }
@@ -260,7 +263,7 @@
       document.getElementById("appId").textContent = appId;
       document.getElementById("mToken").textContent = mToken;
       document.getElementById("testToken").textContent = JSON.stringify(getAuth.data.result || getAuth.data.token);
-      document.getElementById("data-eiei").textContent = JSON.stringify(userData, null, 2);
+      document.getElementById("user-data").textContent = JSON.stringify(userData, null, 2);
 
       loader.style.display = "none";
       card.style.display = "block";

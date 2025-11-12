@@ -11,7 +11,7 @@ services:
       POSTGRES_DB: my_app_db
       PGDATA: /var/lib/postgresql/data/pgdata
     ports:
-      - "5436:5432"
+      - "5433:5432"
     volumes:
       - ./pgdata:/var/lib/postgresql/data
       - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql  
@@ -23,7 +23,7 @@ services:
     container_name: my-node-app
     restart: always
     ports:
-      - "3006:3006"
+      - "3003:3003"
     env_file:
       - .env
     depends_on:
