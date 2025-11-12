@@ -6,19 +6,19 @@ const { initDB } = require("./db");
 require("dotenv").config();
 
 const app = express();
-const PORT = process.env.PORT || 3003;
+const PORT = process.env.PORT || 3006;
 
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "../public")));
 
-// ✅ Redirect root ไป /test3 อัตโนมัติ
+// ✅ Redirect root ไป /test6 อัตโนมัติ
 app.get("/", (req, res) => {
-  res.redirect("/test3");
+  res.redirect("/test6");
 });
 
-// ✅ หน้า test3
-app.get("/test3", (req, res) => {
-  res.sendFile(path.join(__dirname, "../public/test3.html"));
+// ✅ หน้า test6
+app.get("/test6", (req, res) => {
+  res.sendFile(path.join(__dirname, "../public/test6.html"));
 });
 
 // ✅ หน้า home (ถ้ามี)
@@ -32,5 +32,5 @@ app.use("/api", apiRoutes);
 // ✅ Start server + init DB
 app.listen(PORT, async () => {
   await initDB();
-  console.log(`🚀 Server running at http://localhost:${PORT}/test3`);
+  console.log(`🚀 Server running at http://localhost:${PORT}/test6`);
 });
