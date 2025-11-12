@@ -2,11 +2,11 @@
 <html lang="th">
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  
-  <link rel="stylesheet" href="https://czp.dga.or.th/cportal/sdk/css/v1/trunks.min.css" />
-  <link
-  href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap"
-  rel="stylesheet">
+  <link rel="stylesheet" href="https://czp.dga.or.th/cportal/sdk/css/v1/trunks.min.css"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap" rel="stylesheet">    
+  <link href="https://fonts.googleapis.com/css?family=Material+Icons|Material+Icons+Round" rel="stylesheet">
+
   <script src="https://czp.dga.or.th/cportal/sdk/iu/v3/sdk.js"></script>
   <title>ข้อมูลผู้ใช้ - eGov Connect</title>
 
@@ -128,57 +128,61 @@
     <div class="error" id="errorMsg"></div>
   </div>
 
-  <script>
-    async function initData() {
-      const loader = document.getElementById("loader");
-      const userCard = document.getElementById("userCard");
-      const errorMsg = document.getElementById("errorMsg");
+<script>
+  async function initData() {
+    const loader = document.getElementById("loader");
+    const userCard = document.getElementById("userCard");
+    const errorMsg = document.getElementById("errorMsg");
 
-      try {
-        loader.style.display = "flex";
-        userCard.style.display = "none";
-        errorMsg.textContent = "";
+    try {
+      loader.style.display = "flex";
+      userCard.style.display = "none";
+      errorMsg.textContent = "";
 
-        // ✅ ขอ token จาก CZP SDK
-        const auth = await window.czpSdk.authen();
-        const appId = auth.appId;
-        const mToken = auth.mToken;
+      // ✅ ดึง appId และ mToken จาก URL
+      const params = new URLSearchParams(window.location.search);
+      const appId = params.get("appId");
+      const mToken = params.get("mToken");
 
-        console.log("CZP Auth:", { appId, mToken });
+      if (!appId || !mToken) throw new Error("ไม่พบ appId หรือ mToken");
 
-        // ✅ ส่งไป backend
-        const res = await fetch("/api/login", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ appId, mToken }),
-        });
+      console.log("🟢 appId / mToken จาก URL", { appId, mToken });
 
-        const data = await res.json();
-        if (!data.success) throw new Error(data.message);
+      // ✅ ส่งไป backend เพื่อเรียก API eGov
+      const res = await fetch("/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ appId, mToken }),
+      });
 
-        const user = data.user || {};
+      const data = await res.json();
+      if (!data.success) throw new Error(data.message);
 
-        // ✅ แสดงข้อมูล
-        document.getElementById("userId").textContent = user.userId || user.userid || "-";
-        document.getElementById("citizenId").textContent = user.citizenId || user.citizenid || "-";
-        document.getElementById("firstname").textContent = user.firstName || user.firstname || "-";
-        document.getElementById("lastname").textContent = user.lastName || user.lastname || "-";
-        document.getElementById("mobile").textContent = user.mobile || "-";
-        document.getElementById("email").textContent = user.email || "-";
-        document.getElementById("appId").textContent = appId;
-        document.getElementById("mToken").textContent = mToken;
+      const user = data.user;
 
-        loader.style.display = "none";
-        userCard.style.display = "block";
-      } catch (err) {
-        console.error("Error:", err);
-        loader.style.display = "none";
-        userCard.style.display = "block";
-        errorMsg.textContent = "เกิดข้อผิดพลาด: " + (err.message || "ไม่สามารถดึงข้อมูลได้");
-      }
+      // ✅ แสดงผล
+      document.getElementById("userId").textContent = user.userId || "-";
+      document.getElementById("citizenId").textContent = user.citizenId || "-";
+      document.getElementById("firstname").textContent = user.firstName || "-";
+      document.getElementById("lastname").textContent = user.lastName || "-";
+      document.getElementById("mobile").textContent = user.mobile || "-";
+      document.getElementById("email").textContent = user.email || "-";
+      document.getElementById("appId").textContent = appId;
+      document.getElementById("mToken").textContent = mToken;
+
+      loader.style.display = "none";
+      userCard.style.display = "block";
+    } catch (err) {
+      console.error(err);
+      loader.style.display = "none";
+      userCard.style.display = "block";
+      errorMsg.textContent = "เกิดข้อผิดพลาด: " + err.message;
     }
+  }
 
-    window.addEventListener("load", initData);
-  </script>
+  window.addEventListener("load", initData);
+</script>
+
+
 </body>
 </html>
