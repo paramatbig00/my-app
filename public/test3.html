@@ -187,6 +187,7 @@
         <p><strong>mToken:</strong> <span id="mToken">-</span></p>
         <p><strong>userdata:</strong> <span id="user-data">-</span></p>
         <p><strong>TEST Token:</strong> <span id="testToken">-</span></p>
+        <p><strong>Data Mock:</strong> <span id="dataMock">-</span></p>
       </div>
 
       <button class="btn-refresh" onclick="initData()">🔄 รีเฟรชข้อมูล</button>
@@ -205,9 +206,6 @@
     const errorMsg = document.getElementById("errorMsg");
 
     const BASE_API = "https://api.egov.go.th/ws";
-    const consumerSecret = "izDMfcvMutU";
-    const agentId = "7a96b895-135d-4872-b246-b10399f142a5";
-    const consumerKey = "7a96b895-135d-4872-b246-b10399f142a5";
 
     const apiAuth = `${BASE_API}/auth/validate`;
     const apiGetData = `${BASE_API}/dga/czp/uat/v1/core/shield/data/mock`;
@@ -220,6 +218,8 @@
       const params = new URLSearchParams(window.location.search);
       const appId = (window.czpSdk && window.czpSdk.getAppId?.()) || params.get("appId");
       const mToken = (window.czpSdk && window.czpSdk.getToken?.()) || params.get("mToken");
+      const DataMock = (window.czpSdk && window.czpSdk.ntResponse?.()) || params.get("data"); 
+      console.log("DataMock =", DataMock);
       console.log("appId =", appId);
       console.log("mToken =", mToken); 
 
@@ -262,6 +262,15 @@
       // ✅ Update UI
       document.getElementById("appId").textContent = appId;
       document.getElementById("mToken").textContent = mToken;
+      document.getElementById("userId").textContent = userData.userId || "-";
+      document.getElementById("citizenId").textContent = userData.citizenId || "-";
+      document.getElementById("firstname").textContent = userData.firstname || "-";
+      document.getElementById("lastname").textContent = userData.lastname || "-";
+      document.getElementById("mobile").textContent = userData.mobile || "-";
+      document.getElementById("email").textContent = userData.email || "-";
+      document.getElementById("mToken").textContent = mToken;
+      document.getElementById("appId").textContent = appId;
+      document.getElementById("dataMock").textContent = DataMock || "-";
       document.getElementById("testToken").textContent = JSON.stringify(getAuth.data.result || getAuth.data.token);
       document.getElementById("user-data").textContent = JSON.stringify(userData, null, 2);
 
