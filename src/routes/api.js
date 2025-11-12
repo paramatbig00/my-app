@@ -10,7 +10,9 @@ router.post("/login", async (req, res) => {
   try {
     const { appId, mToken } = req.body;
     if (!appId || !mToken) {
-      return res.status(400).json({ success: false, message: "Missing appId or mToken" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Missing appId or mToken" });
     }
 
     console.log("📥 รับจาก Frontend:", { appId, mToken });
@@ -26,7 +28,7 @@ router.post("/login", async (req, res) => {
         headers: {
           "Consumer-Key": process.env.CONSUMER_KEY,
           "Content-Type": "application/json",
-          "Token": mToken,
+          Token: mToken,
         },
       }
     );
@@ -70,6 +72,11 @@ router.post("/login", async (req, res) => {
       error: err.response?.data || err.message,
     });
   }
+  res.status(500).json({
+    success: false,
+    message: "เกิดข้อผิดพลาดในการเชื่อมต่อกับ CZP",
+    error: err.response?.data || err.message,
+  });
 });
 
 module.exports = router;
