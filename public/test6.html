@@ -1,12 +1,13 @@
 <!DOCTYPE html>
 <html lang="th">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>ข้อมูลผู้ใช้ - eGov Connect</title>
 
   <!-- ✅ Font & Style -->
-  <link rel="stylesheet" href="https://czp.dga.or.th/cportal/sdk/css/v1/trunks.min.css"/>
+  <link rel="stylesheet" href="https://czp.dga.or.th/cportal/sdk/css/v1/trunks.min.css" />
   <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css?family=Material+Icons|Material+Icons+Round" rel="stylesheet">
 
@@ -41,7 +42,9 @@
       animation: fadeIn 0.5s ease;
     }
 
-    .card:hover { transform: translateY(-2px); }
+    .card:hover {
+      transform: translateY(-2px);
+    }
 
     .card-header {
       background: var(--primary);
@@ -61,12 +64,22 @@
       align-items: center;
       justify-content: center;
       margin: 0 auto 10px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
     }
 
-    .card-body { padding: 24px; color: var(--text-dark); }
-    .info-group { margin-bottom: 16px; }
-    .info-group p { margin: 6px 0; font-size: 15px; }
+    .card-body {
+      padding: 24px;
+      color: var(--text-dark);
+    }
+
+    .info-group {
+      margin-bottom: 16px;
+    }
+
+    .info-group p {
+      margin: 6px 0;
+      font-size: 15px;
+    }
 
     .meta {
       background: #f1f3f8;
@@ -91,7 +104,9 @@
       transition: background 0.3s;
     }
 
-    .btn-refresh:hover { background: var(--primary-dark); }
+    .btn-refresh:hover {
+      background: var(--primary-dark);
+    }
 
     .error {
       color: red;
@@ -121,13 +136,25 @@
     }
 
     @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
+      0% {
+        transform: rotate(0deg);
+      }
+
+      100% {
+        transform: rotate(360deg);
+      }
     }
 
     @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(15px); }
-      to { opacity: 1; transform: translateY(0); }
+      from {
+        opacity: 0;
+        transform: translateY(15px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
   </style>
 </head>
@@ -213,16 +240,16 @@
         }
 
         const getData = await axios.post(
-  apiGetData,
-  { appId: appId, mToken: mToken },
-  {
-    headers: {
-      "Consumer-Key": consumerKey,
-      "Content-Type": "application/json",
-      "Token": getAuth.data?.result || getAuth.result
-    }
-  }
-);
+          apiGetData,
+          { appId: appId, mToken: mToken },
+          {
+            headers: {
+              "Consumer-Key": consumerKey,
+              "Content-Type": "application/json",
+              "Token": getAuth.data?.Result || getAuth.Result
+            }
+          }
+        );
 
         this.userData = getData.data;
 
@@ -231,7 +258,7 @@
         // ✅ แสดงผล
         document.getElementById("appId").textContent = appId;
         document.getElementById("mToken").textContent = mToken;
-        document.getElementById("testToken").textContent = JSON.stringify(getAuth.data.result || getAuth.data);
+        document.getElementById("testToken").textContent = JSON.stringify(getAuth.data.Result || getAuth.Result);
         document.getElementById("data-eiei").textContent = userData;
         loader.style.display = "none";
         card.style.display = "block";
@@ -246,4 +273,5 @@
     window.addEventListener("load", initData);
   </script>
 </body>
+
 </html>
