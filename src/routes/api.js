@@ -138,6 +138,7 @@ router.post("/notification", async (req, res) => {
     // ✅ ดึงข้อมูลจาก body ที่ frontend ส่งมา
     const { appId, userId, token, message, sendDateTime } = req.body;
 
+    console.log("📥 Notification Request Body:", req.body);
     if (!appId || !userId || !token)
       return res.status(400).json({
         success: false,
@@ -163,8 +164,7 @@ router.post("/notification", async (req, res) => {
           userId: userId,
         },
       ],
-      sendDateTime:
-        sendDateTime || new Date().toISOString().replace("Z", "+07:00"), // ถ้าไม่ส่งมาก็ใช้เวลาปัจจุบัน
+      sendDateTime: sendDateTime || null
     };
 
     console.log("🌐 [STEP] Calling DGA:", Urlnoti);
