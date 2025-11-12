@@ -3,15 +3,18 @@
 
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="https://czp.dga.or.th/cportal/sdk/css/v1/trunks.min.css" />
-  <link rel="preconnect" href="https://fonts.gstatic.com">
-  <link
-    href="https://fonts.googleapis.com/css2?family=Prompt:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap"
-    rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css?family=Material+Icons|Material+Icons+Round" rel="stylesheet">
-  <script src="https://czp.dga.or.th/cportal/sdk/iu/v3/sdk.js"></script>
-
   <title>ข้อมูลผู้ใช้ - DGA Connect</title>
+
+  <!-- ✅ CZP SDK (แก้ path ให้ถูกต้อง) -->
+  <link rel="stylesheet" href="https://czp.dga.or.th/cportal/sdk/css/v1/trunks.css" />
+  <script src="https://czp.dga.or.th/cportal/sdk/js/v1/trunks.js"></script>
+
+  <!-- ✅ Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css?family=Material+Icons|Material+Icons+Round" rel="stylesheet">
+
+  <!-- ✅ Axios ต้องมาก่อนใช้งาน -->
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 
   <style>
     body {
@@ -106,7 +109,6 @@
         opacity: 0;
         transform: translateY(15px);
       }
-
       to {
         opacity: 1;
         transform: translateY(0);
@@ -175,13 +177,20 @@
     </div>
   </div>
 
-
   <script>
     async function initData() {
       const loader = document.getElementById("loader");
       const card = document.getElementById("userCard");
       const errorMsg = document.getElementById("errorMsg");
+      const logBox = document.getElementById("logBox");
+
+      const log = (msg) => {
+        logBox.textContent += `[${new Date().toLocaleTimeString()}] ${msg}\n`;
+        logBox.scrollTop = logBox.scrollHeight;
+      };
+
       console.log("เริ่มดึงข้อมูลผู้ใช้...");
+      log("เริ่มดึงข้อมูลผู้ใช้...");
 
       try {
         loader.style.display = "flex";
@@ -189,46 +198,44 @@
         errorMsg.textContent = "";
 
         // ✅ [1] Validate เพื่อขอ Token จาก backend (.env)
+        log("กำลังเรียก /api/validate...");
         const validateRes = await axios.get("/api/validate");
         const token = validateRes.data.token;
-        console.log("✅ Token จาก validate:", token);
+        log(`✅ ได้ Token จาก validate: ${token}`);
 
-        // ✅ [2] ดึง appId และ mToken จาก SDK
-        const appId =
-          (window.czpSdk && window.czpSdk.getAppId?.()) ||
+        // ✅ [2] ดึง appId และ mToken จาก SDK หรือ URL
+        const appId = (window.czpSdk && window.czpSdk.getAppId?.()) ||
           new URLSearchParams(window.location.search).get("appId");
-        const mToken =
-          (window.czpSdk && window.czpSdk.getToken?.()) ||
+        const mToken = (window.czpSdk && window.czpSdk.getToken?.()) ||
           new URLSearchParams(window.location.search).get("mToken");
 
-        console.log("📱 appId:", appId);
-        console.log("🔑 mToken:", mToken);
+        log(`📱 appId: ${appId}`);
+        log(`🔑 mToken: ${mToken}`);
 
         if (!appId || !mToken) {
           throw new Error("ไม่พบ appId หรือ mToken (หมดอายุหรือยังไม่ได้รับสิทธิ์)");
         }
 
         // ✅ [3] ส่ง appId, mToken, token ไป backend เพื่อดึงข้อมูลผู้ใช้
+        log("กำลังเรียก /api/login...");
         const res = await axios.post("/api/login", { appId, mToken, token });
         const data = res.data.user;
-
-        console.log("👤 ข้อมูลผู้ใช้:", data);
+        log("✅ ดึงข้อมูลผู้ใช้สำเร็จ");
 
         // ✅ [4] อัปเดต UI
         document.getElementById("appId").textContent = appId;
         document.getElementById("mToken").textContent = mToken;
-        document.getElementById("userId").textContent = data.userId || "-";
         document.getElementById("citizenId").textContent = data.citizenId || "-";
         document.getElementById("firstname").textContent = data.firstName || "-";
         document.getElementById("lastname").textContent = data.lastName || "-";
         document.getElementById("mobile").textContent = data.mobile || "-";
         document.getElementById("email").textContent = data.email || "-";
-        document.getElementById("testToken").textContent = token;
 
         loader.style.display = "none";
         card.style.display = "block";
       } catch (err) {
         console.error("❌ ERROR:", err);
+        log(`❌ ERROR: ${err.message}`);
         loader.style.display = "none";
         card.style.display = "block";
         errorMsg.textContent = "เกิดข้อผิดพลาด: " + err.message;
@@ -237,7 +244,5 @@
 
     window.addEventListener("load", initData);
   </script>
-
 </body>
-
 </html>
