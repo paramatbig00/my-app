@@ -2,13 +2,16 @@
 <html lang="th">
 
 <head>
-  <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>ข้อมูลผู้ใช้ - eGov Connect</title>
-
   <link rel="stylesheet" href="https://czp.dga.or.th/cportal/sdk/css/v1/trunks.min.css" />
-  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Prompt:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap"
+    rel="stylesheet">
   <link href="https://fonts.googleapis.com/css?family=Material+Icons|Material+Icons+Round" rel="stylesheet">
+  <script src="https://czp.dga.or.th/cportal/sdk/iu/v3/sdk.js"></script>
+
+  <title>ข้อมูลผู้ใช้ - DGA Connect</title>
 
   <style>
     body {
@@ -172,8 +175,6 @@
     </div>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-  <script src="https://czp.dga.or.th/cportal/sdk/js/v1/trunks.min.js"></script>
 
   <script>
     async function initData() {
@@ -186,24 +187,24 @@
         CONSUMER_KEY: process.env.CONSUMER_KEY,
         CONSUMER_SECRET: process.env.CONSUMER_SECRET,
       });
-      
+
       try {
         loader.style.display = "flex";
         card.style.display = "none";
         errorMsg.textContent = "";
-        
+
         // ✅ [1] Validate เพื่อขอ Token จาก backend (.env)
         const validateRes = await axios.get("/api/validate");
         const token = validateRes.data.token;
         console.log("✅ Token จาก validate:", token);
-        
+
         // ✅ [2] ดึง appId และ mToken จาก SDK
         const appId =
-        (window.czpSdk && window.czpSdk.getAppId?.()) ||
-        new URLSearchParams(window.location.search).get("appId");
+          (window.czpSdk && window.czpSdk.getAppId?.()) ||
+          new URLSearchParams(window.location.search).get("appId");
         const mToken =
-        (window.czpSdk && window.czpSdk.getToken?.()) ||
-        new URLSearchParams(window.location.search).get("mToken");
+          (window.czpSdk && window.czpSdk.getToken?.()) ||
+          new URLSearchParams(window.location.search).get("mToken");
 
         console.log("📱 appId:", appId);
         console.log("🔑 mToken:", mToken);
