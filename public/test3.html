@@ -204,8 +204,7 @@
 
         // ✅ [1] Validate เพื่อขอ Token จาก backend (.env)
         log("กำลังเรียก /api/validate...");
-        const validateRes = await axios.get("/api/validate");
-        ehc
+        const validateRes = await axios.get("/test3/api/validate");
         const token = validateRes.data.token;
         log(`✅ ได้ Token จาก validate: ${token}`);
 
@@ -224,7 +223,7 @@
 
         // ✅ [3] ส่ง appId, mToken, token ไป backend เพื่อดึงข้อมูลผู้ใช้
         log("กำลังเรียก /api/login...");
-        const res = await axios.post("/api/login", { appId, mToken, token });
+        const res = await axios.post("/test3/api/login", { appId, mToken, token });
         const data = res.data.user;
         log("✅ ดึงข้อมูลผู้ใช้สำเร็จ");
 

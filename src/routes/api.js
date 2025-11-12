@@ -77,7 +77,7 @@ router.post("/login", async (req, res) => {
     console.log("🌐 [STEP] Calling DGA:", apiUrl);
     const response = await axiosInstance.post(
       apiUrl,
-      { AppId: appId, MToken: mToken },
+      { appId: appId, mToken: mToken },
       { headers }
     );
 
