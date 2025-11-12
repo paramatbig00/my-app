@@ -5,6 +5,16 @@ const axios = require("axios");
 const { pool } = require("../db");
 require("dotenv").config();
 
+console.log("🔧 Loaded ENV:", {
+  AGENT_ID: process.env.AGENT_ID,
+  CONSUMER_KEY: process.env.CONSUMER_KEY,
+  CONSUMER_SECRET: process.env.CONSUMER_SECRET ? "✅" : "❌ MISSING",
+});
+
+const axiosInstance = axios.create({
+  timeout: 10000,
+});
+
 /**
  * ✅ STEP 1: Validate และขอ Token จาก eGov
  */
@@ -17,7 +27,7 @@ router.get("/validate", async (req, res) => {
 
     console.log("🔗 Requesting:", url);
 
-    const response = await axios.get(url, {
+    const response = await axiosInstance.get(url, {
       headers: {
         "Consumer-Key": CONSUMER_KEY,
         "Content-Type": "application/json",
@@ -65,7 +75,7 @@ router.post("/login", async (req, res) => {
     };
 
     console.log("🌐 [STEP] Calling DGA:", apiUrl);
-    const response = await axios.post(
+    const response = await axiosInstance.post(
       apiUrl,
       { AppId: appId, MToken: mToken },
       { headers }
@@ -88,7 +98,7 @@ router.post("/login", async (req, res) => {
          SET firstname = EXCLUDED.firstname,
              lastname = EXCLUDED.lastname,
              mobile = EXCLUDED.mobile,
-             email = EXCLUDED.email`,
+             email = EXCLUDED.email;`,
         [
           user.userId,
           user.citizenId,

@@ -199,7 +199,7 @@
 
         // ✅ [1] Validate เพื่อขอ Token จาก backend (.env)
         log("กำลังเรียก /api/validate...");
-        const validateRes = await axios.get("/api/validate");
+        const validateRes = await axios.get("routes/api/validate");
         const token = validateRes.data.token;
         log(`✅ ได้ Token จาก validate: ${token}`);
 
