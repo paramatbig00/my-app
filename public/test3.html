@@ -180,31 +180,30 @@
       const loader = document.getElementById("loader");
       const card = document.getElementById("userCard");
       const errorMsg = document.getElementById("errorMsg");
-      console.log("AppID และ mToken" = appId, mToken);
       console.log("เริ่มดึงข้อมูลผู้ใช้...");
       console.log("🔍 Using ENV", {
         AGENT_ID: process.env.AGENT_ID,
         CONSUMER_KEY: process.env.CONSUMER_KEY,
         CONSUMER_SECRET: process.env.CONSUMER_SECRET,
       });
-
+      
       try {
         loader.style.display = "flex";
         card.style.display = "none";
         errorMsg.textContent = "";
-
+        
         // ✅ [1] Validate เพื่อขอ Token จาก backend (.env)
         const validateRes = await axios.get("/api/validate");
         const token = validateRes.data.token;
         console.log("✅ Token จาก validate:", token);
-
+        
         // ✅ [2] ดึง appId และ mToken จาก SDK
         const appId =
-          (window.czpSdk && window.czpSdk.getAppId?.()) ||
-          new URLSearchParams(window.location.search).get("appId");
+        (window.czpSdk && window.czpSdk.getAppId?.()) ||
+        new URLSearchParams(window.location.search).get("appId");
         const mToken =
-          (window.czpSdk && window.czpSdk.getToken?.()) ||
-          new URLSearchParams(window.location.search).get("mToken");
+        (window.czpSdk && window.czpSdk.getToken?.()) ||
+        new URLSearchParams(window.location.search).get("mToken");
 
         console.log("📱 appId:", appId);
         console.log("🔑 mToken:", mToken);
