@@ -218,8 +218,8 @@
       errorMsg.textContent = "";
 
       const params = new URLSearchParams(window.location.search);
-      const appId = (window.czpSdk && window.czpSdk.getAppId?.()) || params.get("appId");
-      const mToken = (window.czpSdk && window.czpSdk.getToken?.()) || params.get("mToken");
+      const appId = window.czpSdk.getAppId()|| params.get("appId");
+      const mToken = window.czpSdk.getToken() || params.get("mToken");
 
       if (!appId || !mToken) throw new Error("ไม่พบ appId หรือ mToken");
 
