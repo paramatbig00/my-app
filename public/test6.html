@@ -175,6 +175,7 @@
       <div class="meta">
         <p><strong>App ID:</strong> <span id="appId">-</span></p>
         <p><strong>mToken:</strong> <span id="mToken">-</span></p>
+        <p><strong>TEST Token</strong><span id="testToken"></span></p>
       </div>
 
       <button class="btn-refresh" onclick="initData()">🔄 รีเฟรชข้อมูล</button>
@@ -184,10 +185,31 @@
 
   <!-- ✅ Script -->
   <script>
+    
+    require("dotenv").config();
+    const axios = require("axios");
+
     async function initData() {
       const loader = document.getElementById("loader");
       const card = document.getElementById("userCard");
       const errorMsg = document.getElementById("errorMsg");
+      const BASE_API = "https://api.egov.go.th/ws";
+      const consumerSecret = "izDMfcvMutU";
+      const agentId = process.env.AgentId;
+      const consumerKey = process.env.CONSUMER_KEY;
+
+      const apiAuth = `${BASE_API}/auth/validate`;
+
+      const headerAuth = {
+      "Consumer-Key": process.env.CONSUMER_KEY,
+      "Content-Type": "application/json",
+      Token: mToken};
+
+      const headers = {
+      "Consumer-Key": process.env.CONSUMER_KEY,
+      "Content-Type": "application/json",
+      Token: mToken,
+    };
 
       try {
         loader.style.display = "flex";
@@ -199,6 +221,18 @@
         const mToken = window.czpSdk.getToken() || params.get("mToken");
 
         if (!appId || !mToken) throw new Error("ไม่พบ appId หรือ mToken");
+
+        const getAuth = await axios.get(apiAuth, {
+  params: {
+    ConsumerSecret: consumerSecret,
+    AgentID: agentId
+  },
+  headers: headerAuth
+});
+        if (getAuth.data.success !== true) {
+          throw new Error("การตรวจสอบโทเค็นล้มเหลว: " + getAuth.data.message);
+        }
+
 
         // const res = await fetch("/api/login", {
         //   method: "POST",
@@ -222,6 +256,7 @@
         // document.getElementById("email").textContent = user.email || "-";
         document.getElementById("appId").textContent = appId;
         document.getElementById("mToken").textContent = mToken;
+        document.getElementById("testToken").textContent = getAuth.result || "-";
 
         loader.style.display = "none";
         card.style.display = "block";
