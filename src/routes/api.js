@@ -24,7 +24,7 @@ router.get("/validate", async (req, res) => {
 
     const { AGENT_ID, CONSUMER_KEY, CONSUMER_SECRET } = process.env;
     const url = `https://api.egov.go.th/ws/auth/validate?ConsumerSecret=${CONSUMER_SECRET}&AgentID=${AGENT_ID}`;
-    
+
     console.log("🔗 Requesting:", url);
 
     const response = await axiosInstance.get(url, {
@@ -123,6 +123,68 @@ router.post("/login", async (req, res) => {
     res.status(500).json({
       success: false,
       message: "เกิดข้อผิดพลาดในการเชื่อมต่อกับ CZP",
+      error: err.response?.data || err.message,
+    });
+  }
+});
+
+/**
+ * ✅ STEP 3: ส่ง Notification ไปยัง eGov
+ */
+router.post("/notification", async (req, res) => {
+  try {
+    console.log("🚀 [START] /api/notification");
+
+    // ✅ ดึงข้อมูลจาก body ที่ frontend ส่งมา
+    const { appId, userId, token, message, sendDateTime } = req.body;
+
+    if (!appId || !userId || !token)
+      return res.status(400).json({
+        success: false,
+        message: "Missing appId, userId, or token",
+      });
+
+    const Urlnoti =
+      "https://api.egov.go.th/ws/dga/czp/uat/v1/core/notification/push";
+
+    // ✅ Header ตามคู่มือ DGA
+    const headers = {
+      "Consumer-Key": process.env.CONSUMER_KEY,
+      "Content-Type": "application/json",
+      Token: token,
+    };
+
+    // ✅ Body ตามรูปแบบที่คุณต้องการ
+    const body = {
+      appId: appId,
+      data: [
+        {
+          message: message || "ทดสอบข้อความ", // ค่า default
+          userId: userId,
+        },
+      ],
+      sendDateTime:
+        sendDateTime || new Date().toISOString().replace("Z", "+07:00"), // ถ้าไม่ส่งมาก็ใช้เวลาปัจจุบัน
+    };
+
+    console.log("🌐 [STEP] Calling DGA:", Urlnoti);
+    console.log("📦 Body:", JSON.stringify(body, null, 2));
+
+    const response = await axiosInstance.post(Urlnoti, body, { headers });
+    const result = response.data;
+
+    console.log("✅ DGA Response:", result);
+
+    res.json({
+      success: true,
+      message: "ส่ง Notification สำเร็จ",
+      result,
+    });
+  } catch (err) {
+    console.error("💥 Notification Error:", err.response?.data || err.message);
+    res.status(500).json({
+      success: false,
+      message: "เกิดข้อผิดพลาดในการส่ง Notification",
       error: err.response?.data || err.message,
     });
   }
