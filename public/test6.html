@@ -198,80 +198,83 @@
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
   <script src="https://czp.dga.or.th/cportal/sdk/js/v1/trunks.min.js"></script>
 
-  <script>
-    async function initData() {
-      const loader = document.getElementById("loader");
-      const card = document.getElementById("userCard");
-      const errorMsg = document.getElementById("errorMsg");
+<script>
+  async function initData() {
+    const loader = document.getElementById("loader");
+    const card = document.getElementById("userCard");
+    const errorMsg = document.getElementById("errorMsg");
 
-      const BASE_API = "https://api.egov.go.th/ws";
-      const consumerSecret = "izDMfcvMutU";
-      const agentId = "7a96b895-135d-4872-b246-b10399f142a5";      // 🔹 ใส่ค่าจริง
-      const consumerKey = "7a96b895-135d-4872-b246-b10399f142a5"; // 🔹 ใส่ค่าจริง
+    const BASE_API = "https://api.egov.go.th/ws";
+    const consumerSecret = "izDMfcvMutU";
+    const agentId = "7a96b895-135d-4872-b246-b10399f142a5";
+    const consumerKey = "7a96b895-135d-4872-b246-b10399f142a5";
 
-      const apiAuth = `${BASE_API}/auth/validate`;
+    const apiAuth = `${BASE_API}/auth/validate`;
+    const apiGetData = `${BASE_API}/dga/czp/uat/v1/core/shield/data/mock`;
 
-      const apiGetData = 'https://api.egov.go.th/ws/dga/czp/uat/v1/core/shield/data/mock'
+    try {
+      loader.style.display = "flex";
+      card.style.display = "none";
+      errorMsg.textContent = "";
 
-      const userData = '';
+      const params = new URLSearchParams(window.location.search);
+      const appId = (window.czpSdk && window.czpSdk.getAppId?.()) || params.get("appId");
+      const mToken = (window.czpSdk && window.czpSdk.getToken?.()) || params.get("mToken");
 
-      try {
-        loader.style.display = "flex";
-        card.style.display = "none";
-        errorMsg.textContent = "";
+      if (!appId || !mToken) throw new Error("ไม่พบ appId หรือ mToken");
 
-        const params = new URLSearchParams(window.location.search);
-        const appId = (window.czpSdk && window.czpSdk.getAppId?.()) || params.get("appId");
-        const mToken = (window.czpSdk && window.czpSdk.getToken?.()) || params.get("mToken");
+      // ✅ Auth validate
+      const getAuth = await axios.get(apiAuth, {
+        params: { ConsumerSecret: consumerSecret, AgentID: agentId },
+        headers: {
+          "Consumer-Key": consumerKey,
+          "Content-Type": "application/json",
+          "Token": mToken
+        }
+      });
 
-        if (!appId || !mToken) throw new Error("ไม่พบ appId หรือ mToken");
+      console.log("getAuth.data =", getAuth.data);
 
-        const getAuth = await axios.get(apiAuth, {
-          params: { ConsumerSecret: consumerSecret, AgentID: agentId },
+      if (getAuth.data.success !== true) {
+        throw new Error("การตรวจสอบโทเค็นล้มเหลว: " + (getAuth.data.message || "-"));
+      }
+
+      // ✅ Get data using validated token
+      const getData = await axios.post(
+        apiGetData,
+        { appId, mToken },
+        {
           headers: {
             "Consumer-Key": consumerKey,
             "Content-Type": "application/json",
-            "Token": mToken
+            "Token": getAuth.data?.Result || getAuth.Result
           }
-        });
-
-        if (getAuth.data.success !== true) {
-          throw new Error("การตรวจสอบโทเค็นล้มเหลว: " + (getAuth.data.message || "-"));
         }
+      );
 
-        const getData = await axios.post(
-          apiGetData,
-          { appId: appId, mToken: mToken },
-          {
-            headers: {
-              "Consumer-Key": consumerKey,
-              "Content-Type": "application/json",
-              "Token": getAuth.data?.Result || getAuth.Result
-            }
-          }
-        );
+      console.log("getData =", getData.data);
 
-        this.userData = getData.data;
+      const userData = getData.data;
 
+      // ✅ Update UI
+      document.getElementById("appId").textContent = appId;
+      document.getElementById("mToken").textContent = mToken;
+      document.getElementById("testToken").textContent = JSON.stringify(getAuth.data.result || getAuth.data.token);
+      document.getElementById("data-eiei").textContent = JSON.stringify(userData, null, 2);
 
-
-        // ✅ แสดงผล
-        document.getElementById("appId").textContent = appId;
-        document.getElementById("mToken").textContent = mToken;
-        document.getElementById("testToken").textContent = JSON.stringify(getAuth.data.Result || getAuth.Result);
-        document.getElementById("data-eiei").textContent = userData;
-        loader.style.display = "none";
-        card.style.display = "block";
-      } catch (err) {
-        console.error(err);
-        loader.style.display = "none";
-        card.style.display = "block";
-        errorMsg.textContent = "เกิดข้อผิดพลาด: " + err.message;
-      }
+      loader.style.display = "none";
+      card.style.display = "block";
+    } catch (err) {
+      console.error("❌ ERROR:", err);
+      loader.style.display = "none";
+      card.style.display = "block";
+      errorMsg.textContent = "เกิดข้อผิดพลาด: " + err.message;
     }
+  }
 
-    window.addEventListener("load", initData);
-  </script>
+  window.addEventListener("load", initData);
+</script>
+
 </body>
 
 </html>
