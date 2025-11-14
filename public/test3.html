@@ -183,90 +183,98 @@
   </script>
 
 
-<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-<script>
-  async function initData() {
-    const loader = document.getElementById("loader");
-    const card = document.getElementById("userCard");
-    const errorMsg = document.getElementById("errorMsg");
-    const logBox = document.getElementById("logBox");
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <script>
+    async function initData() {
+      const loader = document.getElementById("loader");
+      const card = document.getElementById("userCard");
+      const errorMsg = document.getElementById("errorMsg");
+      const logBox = document.getElementById("logBox");
 
-    const log = (msg) => {
-      logBox.textContent += `[${new Date().toLocaleTimeString()}] ${msg}\n`;
-      logBox.scrollTop = logBox.scrollHeight;
-    };
+      const log = (msg) => {
+        logBox.textContent += `[${new Date().toLocaleTimeString()}] ${msg}\n`;
+        logBox.scrollTop = logBox.scrollHeight;
+      };
 
-    log("เริ่มดึงข้อมูลผู้ใช้...");
+      log("เริ่มดึงข้อมูลผู้ใช้...");
 
-    try {
-      loader.style.display = "flex";
-      card.style.display = "none";
-      errorMsg.textContent = "";
+      try {
+        loader.style.display = "flex";
+        card.style.display = "none";
+        errorMsg.textContent = "";
 
-      // ✅ [1] Validate เพื่อขอ Token จาก backend (.env)
-      log("กำลังเรียก /test3/api/validate...");
-      const validateRes = await axios.get("/test3/api/validate");
-      const token = validateRes.data.token;
-      log(`✅ ได้ Token จาก validate: ${token}`);
+        // ✅ [1] Validate เพื่อขอ Token จาก backend (.env)
+        log("กำลังเรียก /test3/api/validate...");
+        const validateRes = await axios.get("/test3/api/validate");
+        const token = validateRes.data.token;
+        log(`✅ ได้ Token จาก validate: ${token}`);
 
-      // ✅ [2] ดึง appId และ mToken จาก SDK หรือ URL
-      const appId =
-        (window.czpSdk && window.czpSdk.getAppId?.()) ||
-        new URLSearchParams(window.location.search).get("appId");
-      const mToken =
-        (window.czpSdk && window.czpSdk.getToken?.()) ||
-        new URLSearchParams(window.location.search).get("mToken");
+        // ✅ [2] ดึง appId และ mToken จาก SDK หรือ URL
+        // const mToken = "eac2b5855c124a6682035ac5303f5327"
+        // const appId = "ec90675a-1fd4-498f-943c-2b5cfb19ffc6"
 
-      log(`📱 appId: ${appId}`);
-      log(`🔑 mToken: ${mToken}`);
 
-      if (!appId || !mToken) {
-        throw new Error("ไม่พบ appId หรือ mToken (หมดอายุหรือยังไม่ได้รับสิทธิ์)");
+        const appId =
+          (window.czpSdk && window.czpSdk.getAppId?.()) ||
+          new URLSearchParams(window.location.search).get("appId");
+        // const mToken =
+          (window.czpSdk && window.czpSdk.getToken?.()) ||
+          new URLSearchParams(window.location.search).get("mToken");
+        const DataDpoc =
+          (window.czpSdk && window.czpSdk.ntResponse?.()) ||
+          new URLSearchParams(window.location.search).get("data");
+
+        log(`📱 appId: ${appId}`);
+        log(`🔑 mToken: ${mToken}`);
+        // log(`🗂 DataDpoc: ${DataDpoc}`);
+
+        if (!appId || !mToken) {
+          throw new Error("ไม่พบ appId หรือ mToken (หมดอายุหรือยังไม่ได้รับสิทธิ์)");
+        }
+
+        // ✅ [3] ดึงข้อมูลผู้ใช้จาก backend
+        log("กำลังเรียก /test3/api/login...");
+        const loginRes = await axios.post("/test3/api/login", { appId, mToken, token });
+        const data = loginRes.data.user;
+        log("✅ ดึงข้อมูลผู้ใช้สำเร็จ");
+
+        // ✅ [4] ทดสอบส่ง Notification
+        log("กำลังเรียก /test3/api/notification...");
+        const notiRes = await axios.post("/test3/api/notification", {
+          appId,
+          userId: data.userId,
+          token,
+          message: "ทดสอบข้อความจากระบบ DGA Connect",
+        });
+
+        if (notiRes.data.success) {
+          log("✅ ส่ง Notification สำเร็จ");
+        } else {
+          log("⚠️ ส่ง Notification ไม่สำเร็จ");
+        }
+
+        // ✅ [5] แสดงผลข้อมูลผู้ใช้
+        document.getElementById("appId").textContent = appId;
+        document.getElementById("mToken").textContent = mToken;
+        document.getElementById("citizenId").textContent = data.citizenId || "-";
+        document.getElementById("firstname").textContent = data.firstName || "-";
+        document.getElementById("lastname").textContent = data.lastName || "-";
+        document.getElementById("mobile").textContent = data.mobile || "-";
+        document.getElementById("email").textContent = data.email || "-";
+
+        loader.style.display = "none";
+        card.style.display = "block";
+      } catch (err) {
+        console.error("❌ ERROR:", err);
+        log(`❌ ERROR: ${err.message}`);
+        loader.style.display = "none";
+        card.style.display = "block";
+        errorMsg.textContent = "เกิดข้อผิดพลาด: " + err.message;
       }
-
-      // ✅ [3] ดึงข้อมูลผู้ใช้จาก backend
-      log("กำลังเรียก /test3/api/login...");
-      const loginRes = await axios.post("/test3/api/login", { appId, mToken, token });
-      const data = loginRes.data.user;
-      log("✅ ดึงข้อมูลผู้ใช้สำเร็จ");
-
-      // ✅ [4] ทดสอบส่ง Notification
-      log("กำลังเรียก /test3/api/notification...");
-      const notiRes = await axios.post("/test3/api/notification", {
-        appId,
-        userId: data.userId,
-        token,
-        message: "ทดสอบข้อความจากระบบ DGA Connect",
-      });
-
-      if (notiRes.data.success) {
-        log("✅ ส่ง Notification สำเร็จ");
-      } else {
-        log("⚠️ ส่ง Notification ไม่สำเร็จ");
-      }
-
-      // ✅ [5] แสดงผลข้อมูลผู้ใช้
-      document.getElementById("appId").textContent = appId;
-      document.getElementById("mToken").textContent = mToken;
-      document.getElementById("citizenId").textContent = data.citizenId || "-";
-      document.getElementById("firstname").textContent = data.firstName || "-";
-      document.getElementById("lastname").textContent = data.lastName || "-";
-      document.getElementById("mobile").textContent = data.mobile || "-";
-      document.getElementById("email").textContent = data.email || "-";
-
-      loader.style.display = "none";
-      card.style.display = "block";
-    } catch (err) {
-      console.error("❌ ERROR:", err);
-      log(`❌ ERROR: ${err.message}`);
-      loader.style.display = "none";
-      card.style.display = "block";
-      errorMsg.textContent = "เกิดข้อผิดพลาด: " + err.message;
     }
-  }
 
-  window.addEventListener("load", initData);
-</script>
+    window.addEventListener("load", initData);
+  </script>
 
 </body>
 
