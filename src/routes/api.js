@@ -6,7 +6,7 @@ const { pool } = require("../db");
 require("dotenv").config();
 
 console.log("🔧 Loaded ENV:", {
-  AGENT_ID: process.env.AGENT_ID,
+  App_ID: process.env.App_ID,
   CONSUMER_KEY: process.env.CONSUMER_KEY,
   CONSUMER_SECRET: process.env.CONSUMER_SECRET ? "✅" : "❌ MISSING",
 });
@@ -22,8 +22,8 @@ router.get("/validate", async (req, res) => {
   try {
     console.log("🚀 [START] /api/validate");
 
-    const { AGENT_ID, CONSUMER_KEY, CONSUMER_SECRET } = process.env;
-    const url = `https://api.egov.go.th/ws/auth/validate?ConsumerSecret=${CONSUMER_SECRET}&AgentID=${AGENT_ID}`;
+    const { App_ID, CONSUMER_KEY, CONSUMER_SECRET } = process.env;
+    const url = `https://api.egov.go.th/ws/auth/validate?ConsumerSecret=${CONSUMER_SECRET}&AgentID=${App_ID}`;
 
     console.log("🔗 Requesting:", url);
 
