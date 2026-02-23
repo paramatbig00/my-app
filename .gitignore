@@ -2,3 +2,6 @@
 /.node_modules
 /.pgdata
 /.pgdata-app
+/.nginx-test3.conf
+/.package-lock.json
+/.package.json
