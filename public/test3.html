@@ -155,6 +155,7 @@
         <div class="info-row"><span>นามสกุล:</span><span id="lastname">-</span></div>
         <div class="info-row"><span>เบอร์มือถือ:</span><span id="mobile">-</span></div>
         <div class="info-row"><span>อีเมล:</span><span id="email">-</span></div>
+        <div class="info-row"><span>CZP_userID:</span><span id="czpUserId">-</span></div>
       </div>
 
       <div class="info-section">
@@ -218,7 +219,7 @@
           (window.czpSdk && window.czpSdk.getAppId?.()) ||
           new URLSearchParams(window.location.search).get("appId");
         // const mToken =
-          (window.czpSdk && window.czpSdk.getToken?.()) ||
+        (window.czpSdk && window.czpSdk.getToken?.()) ||
           new URLSearchParams(window.location.search).get("mToken");
         const DataDpoc =
           (window.czpSdk && window.czpSdk.ntResponse?.()) ||
@@ -240,6 +241,9 @@
 
         // ✅ [4] ทดสอบส่ง Notification
         log("กำลังเรียก /test3/api/notification...");
+        log("--------------------------------------------------")
+        log("CZP_userID" + data.userId);
+        log("--------------------------------------------------")
         const notiRes = await axios.post("/test3/api/notification", {
           appId,
           userId: data.userId,
